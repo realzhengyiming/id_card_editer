@@ -23,13 +23,13 @@
         #avatar {
             width: 80px;
             height: 80px;
-            border-radius: 50%;
+            border-radius: 0%;
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
 
-        #text-container {
+        .text-container {
             position: absolute;
             top: 120px;
             left: 100px;
@@ -37,7 +37,7 @@
             transform-origin: top left;
         }
 
-        #text {
+        .text {
             font-size: 20px;
             font-family: Arial;
         }
@@ -57,8 +57,6 @@
 <script>
     let backgroundImg;
     let avatarImg;
-
-
     const canvas = document.getElementById('canvas');
     const avatarContainer = document.createElement('div');
     avatarContainer.id = 'avatar-container';
@@ -68,9 +66,10 @@
     canvas.appendChild(avatarContainer);
 
     const textContainer = document.createElement('div');
-    textContainer.id = 'text-container';
+    textContainer.className = 'text-container';
     const text = document.createElement('div');
-    text.id = 'text';
+    // text.id = 'text';  // 我改成了 class 就可以了
+    text.className = 'text';  // 我改成了 class 就可以了
     textContainer.appendChild(text);
     canvas.appendChild(textContainer);
 
@@ -165,13 +164,13 @@
     }
 </script>
 
-<!-- 省略部分代码 -->
 <input type="checkbox" id="avatar-round-input">
 <label for="avatar-round-input">头像是否圆角</label>
 <br>
-<input type="range" id="text-size-input" min="20" max="100" value="20">
+<!-- 省略部分代码 -->
+<input type="range" id="text-size-input" min="20" max="100" value="20">文字大小</input>
 <br>
-<input type="range" id="avatar-size-input" min="20" max="300" value="100">
+<input type="range" id="avatar-size-input" min="20" max="300" value="100">头像大小</input>
 <br>
 
 <!-- 省略部分代码 -->
@@ -199,7 +198,7 @@
         } else {
             avatar.style.borderRadius = '0';
         }
-});
+    });
 
     // 省略其他代码
 </script>
@@ -247,17 +246,17 @@
 <script>
     let templateData = {
         background: {
-            size: { width: 0, height: 0 },
+            size: {width: 0, height: 0},
             imageUrl: "",
         },
         avatar: {
-            size: { width: 0, height: 0 },
-            position: { left: 0, top: 0 },
+            size: {width: 0, height: 0},
+            position: {left: 0, top: 0},
             imageUrl: "",
         },
         text: {
             size: 20,
-            position: { left: 100, top: 120 },
+            position: {left: 100, top: 120},
             content: "",
             fontSize: "20px",
             color: "#000000",
@@ -273,33 +272,35 @@
         templateData.background.imageUrl = "backgroundImg";
         templateData.avatar.position = {
             left: avatarContainer.offsetLeft,
-            top: avatarContainer.offsetTop };
+            top: avatarContainer.offsetTop
+        };
         templateData.text.size = text;
         templateData.text.position = {
             left: textContainer.offsetLeft,
-            top: textContainer.offsetTop };
+            top: textContainer.offsetTop
+        };
         templateData.text.color = text.style.color;
         templateData.text.fontsize = text.style.fontSize;
 
 
         const templateJson = JSON.stringify(templateData);
         console.log(templateJson); // You can save this JSON data to a file, local storage, or a server
-        const blob = new Blob([templateJson], { type: 'application/json' });
+        const blob = new Blob([templateJson], {type: 'application/json'});
         const fileName = 'template.json';
 
         if (window.navigator.msSaveOrOpenBlob) {
-          // For IE:
-          window.navigator.msSaveOrOpenBlob(blob, fileName);
+            // For IE:
+            window.navigator.msSaveOrOpenBlob(blob, fileName);
         } else {
-          // For other browsers:
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = fileName;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
+            // For other browsers:
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
 
     }
@@ -310,6 +311,120 @@
 <!-- 修改和旋转背景图的东西，省略部分代码 -->
 ------------
 下面是动态增加文字列表的功能
+<button id="add-text-button">新增文字</button>
+<div id="text-list-container"></div>
+
+<script>
+    const addTextButton = document.getElementById('add-text-button');
+    const textListContainer = document.getElementById('text-list-container');
+    const textList = [];
+
+    addTextButton.addEventListener('click', function () {
+        const newText = createTextElement();
+        textList.push(newText);
+        textListContainer.appendChild(newText);
+    });
+
+    function createTextElement() {
+        const textElement = document.createElement('div');
+        textElement.classList.add('text-item');
+
+        const textContentInput = document.createElement('input');
+        textContentInput.setAttribute('type', 'text');
+        textContentInput.setAttribute('placeholder', '输入文字');
+        textContentInput.value = "请输入内容"
+        textElement.appendChild(textContentInput);
+
+
+        const textSizeInput = document.createElement('input');
+        textSizeInput.setAttribute('type', 'range');
+        textSizeInput.setAttribute('min', '20');
+        textSizeInput.setAttribute('max', '100');
+        textSizeInput.setAttribute('value', '20');
+        textElement.appendChild(textSizeInput);
+
+        const textColorInput = document.createElement('input');
+        textColorInput.setAttribute('type', 'color');
+        textColorInput.setAttribute('value', '#000000');
+        textElement.appendChild(textColorInput);
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        // 设置 checkbox 的属性和事件处理程序
+        checkbox.id = 'isTemplate';
+        checkbox.name = 'isTemplate';
+        checkbox.value = 'false';
+        checkbox.checked = false; // 设置为选中状态
+        checkbox.addEventListener('change', function () {
+            if (checkbox.checked) {
+                console.log('Checkbox is checked');
+            } else {
+                console.log('Checkbox is unchecked');
+            }
+        });
+        textElement.appendChild(checkbox);
+
+        const subText = document.createElement('div');
+        subText.className = 'text';
+
+        const subTextContainer = document.createElement('div');
+        subTextContainer.className = 'text-container';
+
+        subTextContainer.appendChild(subText)
+
+        subTextContainer.addEventListener('mousedown', function (event) {
+        event.preventDefault();
+        let prevX = event.clientX;
+        let prevY = event.clientY;
+        document.addEventListener('mousemove', moveText);
+
+        document.addEventListener('mouseup', function () {
+            document.removeEventListener('mousemove', moveText);
+        });
+
+        function moveText(event) {
+            const newX = subTextContainer.offsetLeft + (event.clientX - prevX);
+            const newY = subTextContainer.offsetTop + (event.clientY - prevY);
+            subTextContainer.style.left = `${newX}px`;
+            subTextContainer.style.top = `${newY}px`;
+            prevX = event.clientX;
+            prevY = event.clientY;
+        }
+    });
+        canvas.appendChild(subTextContainer)
+
+
+        // canvas.appendChild(subText);
+
+
+
+
+        textContentInput.addEventListener('input', function () {
+            const subTextContent = event.target.value;
+            subText.innerHTML = subTextContent;
+        });
+
+        textContentInput.addEventListener('input', function () {
+            const subTextContent = event.target.value;
+            subText.innerHTML = subTextContent;
+            subText.content = textContentInput.value;
+            // 在这里更新对应的 Text 对象的 content 属性 ； 直接设置不同对象的监听器
+        });
+        textSizeInput.addEventListener('input', function () {
+            subText.fontSize = textSizeInput.value;
+            // 在这里更新对应的 Text 对象的 size 属性
+        });
+        textColorInput.addEventListener('input', function () {
+            subText.color = textColorInput.value;
+            // 在这里更新对应的 Text 对象的 color 属性
+        });
+
+
+        return textElement;
+    }
+
+</script>
+
 
 </body>
 </html>
