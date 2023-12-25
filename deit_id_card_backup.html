@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ID卡编辑器</title>
+    <style>
+        #canvas {
+            border: 1px solid #000;
+            width: 500px;
+            height: 800px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #avatar-container {
+            position: absolute;
+            cursor: move;
+            transform-origin: top left;
+        }
+        #avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        #text-container {
+            position: absolute;
+            top: 120px;
+            left: 100px;
+            cursor: move;
+            transform-origin: top left;
+        }
+        #text {
+            font-size: 20px;
+            font-family: Arial;
+        }
+    </style>
+</head>
+<body>
+    <h1>ID卡编辑器</h1>
+    <input type="file" id="background-input" accept="image/*">
+    <br>
+    <div id="canvas"></div>
+    <br>
+    <input type="file" id="avatar-input" accept="image/*">
+    <br>
+    <input type="text" id="text-input" placeholder="输入文字">
+    <br>
+    <button onclick="renderImage()">生成ID卡</button>
+
+    <script>
+        let backgroundImg;
+        let avatarImg;
+
+        const canvas = document.getElementById('canvas');
+        const avatarContainer = document.createElement('div');
+        avatarContainer.id = 'avatar-container';
+        const avatar = document.createElement('div');
+        avatar.id = 'avatar';
+        avatarContainer.appendChild(avatar);
+        canvas.appendChild(avatarContainer);
+
+        const textContainer = document.createElement('div');
+        textContainer.id = 'text-container';
+        const text = document.createElement('div');
+        text.id = 'text';
+        textContainer.appendChild(text);
+        canvas.appendChild(textContainer);
+
+        // 上传背景图片
+        document.getElementById('background-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                backgroundImg = e.target.result;
+                canvas.style.backgroundImage = `url(${backgroundImg})`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 上传用户头像
+        document.getElementById('avatar-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarImg = e.target.result;
+                avatar.style.backgroundImage = `url(${avatarImg})`;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // 文字编辑
+        document.getElementById('text-input').addEventListener('input', function(event) {
+            const textContent = event.target.value;
+            text.innerHTML = textContent;
+        });
+
+        // 头像拖动功能
+        avatarContainer.addEventListener('mousedown', function(event) {
+            event.preventDefault();
+            let prevX = event.clientX;
+            let prevY = event.clientY;
+            document.addEventListener('mousemove', moveAvatar);
+
+            document.addEventListener('mouseup', function() {
+                document.removeEventListener('mousemove', moveAvatar);
+            });
+
+            function moveAvatar(event) {
+                const newX = avatarContainer.offsetLeft + (event.clientX - prevX);
+                const newY = avatarContainer.offsetTop + (event.clientY - prevY);
+                avatarContainer.style.left = `${newX}px`;
+                avatarContainer.style.top = `${newY}px`;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
+        });
+
+        // 文字拖动功能
+        textContainer.addEventListener('mousedown', function(event) {
+            event.preventDefault();
+            let prevX = event.clientX;
+            let prevY = event.clientY;
+            document.addEventListener('mousemove', moveText);
+
+            document.addEventListener('mouseup', function() {
+                document.removeEventListener('mousemove', moveText);
+            });
+
+            function moveText(event) {
+                const newX = textContainer.offsetLeft + (event.clientX - prevX);
+                const newY = textContainer.offsetTop + (event.clientY - prevY);
+                textContainer.style.left = `${newX}px`;
+                textContainer.style.top = `${newY}px`;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
+        });
+
+        // 生成ID卡图片
+        function renderImage() {
+            const canvasWidth = canvas.offsetWidth;
+            const canvasHeight = canvas.offsetHeight;
+            const avatarX = avatarContainer.offsetLeft;
+            const avatarY = avatarContainer.offsetTop;
+            const avatarWidth = avatar.offsetWidth;
+            const avatarHeight = avatar.offsetHeight;
+            const textContent = document.getElementById('text-input').value;
+            const textX = textContainer.offsetLeft;
+            const textY = textContainer.offsetTop;
+
+            const img = new Image();
+            img.src = backgroundImg;
+            img.onload = function() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvasWidth;
+                tempCanvas.height = canvasHeight;
+                const context = tempCanvas.getContext('2d');
+                context.drawImage(img, 0, 0, canvasWidth, canvasHeight);
+                context.drawImage(avatar, avatarX, avatarY, avatarWidth, avatarHeight);
+                context.font = '20px Arial';
+                context.fillText(textContent, textX, textY);
+
+                const outputImg = new Image();
+                outputImg.src = tempCanvas.toDataURL('image/jpeg');
+                document.body.appendChild(outputImg);
+            };
+        }
+    </script>
+
+
+
+<!-- 省略部分代码 -->
+
+<input type="range" id="text-size-input" min="10" max="1000" value="20">
+<br>
+<input type="range" id="avatar-size-input" min="10" max="2000" value="100">
+<br>
+
+<!-- 省略部分代码 -->
+
+<script>
+    // 省略其他代码
+
+    // 文字大小编辑
+    document.getElementById('text-size-input').addEventListener('input', function(event) {
+        const textSize = event.target.value;
+        text.style.fontSize = `${textSize}px`;
+    });
+
+    // 头像大小编辑
+    document.getElementById('avatar-size-input').addEventListener('input', function(event) {
+        const avatarSize = event.target.value;
+        avatar.style.width = `${avatarSize}px`;
+        avatar.style.height = `${avatarSize}px`;
+    });
+
+    // 省略其他代码
+</script>
+<input type="color" id="text-color-input" value="#000000">
+<br>
+
+<!-- 省略部分代码 -->
+
+<script>
+    // 省略其他代码
+
+    // 文字颜色编辑
+    document.getElementById('text-color-input').addEventListener('input', function(event) {
+        const textColor = event.target.value;
+        text.style.color = textColor;
+    });
+
+    // 省略其他代码
+</script>
+<!-- 省略部分代码 -->
+
+<!-- 省略部分代码 -->
+
+<select id="font-family-select">
+    <option value="Arial">Arial</option>
+    <option value="Verdana">Verdana</option>
+    <option value="Helvetica">Helvetica</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Courier New">Courier New</option>
+</select>
+<br>
+
+<!-- 省略部分代码 -->
+
+<script>
+    // 省略其他代码
+
+    // 文字字体编辑
+    document.getElementById('font-family-select').addEventListener('change', function(event) {
+        const fontFamily = event.target.value;
+        text.style.fontFamily = fontFamily;
+    });
+
+    // 省略其他代码
+    // 获取上传的背景图片的长宽比例，并根据比例调整canvas的长宽比例
+document.getElementById('background-input').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+        img.src = e.target.result;
+        img.onload = function() {
+            const aspectRatio = img.width / img.height;
+            const canvasWidth = canvas.offsetWidth;
+            const canvasHeight = canvasWidth / aspectRatio;
+            canvas.style.height = `${canvasHeight}px`;
+
+            // 设置背景图
+            backgroundImg = e.target.result;
+            canvas.style.backgroundImage = `url(${backgroundImg})`;
+        };
+    };
+    reader.readAsDataURL(file);
+});
+
+// 添加旋转背景图片的操作控制
+let rotationAngle = 0;
+
+function rotateBackground() {
+    rotationAngle += 90;
+    canvas.style.transform = `rotate(${rotationAngle}deg)`;
+    adjustCanvasSizeForRotation(rotationAngle);
+}
+
+// 根据旋转后的角度调整canvas的大小以适应新的长宽比例
+function adjustCanvasSizeForRotation(angle) {
+    const img = new Image();
+    img.src = backgroundImg;
+    img.onload = function() {
+        const newWidth = img.height;
+        const newHeight = img.width;
+        let maxWidth = 800;
+        let maxHeight = 800;
+
+        if (angle % 180 !== 0) {
+            canvas.style.height = `${newHeight}px`;
+            canvas.style.width = `${newWidth}px`;
+        } else {
+            canvas.style.height = `${newWidth}px`;
+            canvas.style.width = `${newHeight}px`;
+        }
+
+        // 限制在800px * 500px的范围内
+        if (parseInt(canvas.style.width) > maxWidth || parseInt(canvas.style.height) > maxHeight) {
+            const ratio = Math.min(maxWidth / parseInt(canvas.style.width), maxHeight / parseInt(canvas.style.height));
+            canvas.style.width = `${parseInt(canvas.style.width) * ratio}px`;
+            canvas.style.height = `${parseInt(canvas.style.height) * ratio}px`;
+        }
+    };
+}
+
+</script>
+<button onclick="rotateBackground()">旋转背景图</button>
+
+<!-- 修改和旋转背景图的东西，省略部分代码 -->
+
+
+
+</body>
+
+</html>

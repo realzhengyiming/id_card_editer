@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>ID卡编辑器</title>
+    <style>
+        #canvas {
+            border: 1px solid #000;
+            width: 500px;
+            height: 500px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #avatar-container {
+            position: absolute;
+            cursor: move;
+            transform-origin: top left;
+        }
+
+        #avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #text-container {
+            position: absolute;
+            top: 120px;
+            left: 100px;
+            cursor: move;
+            transform-origin: top left;
+        }
+
+        #text {
+            font-size: 20px;
+            font-family: Arial;
+        }
+    </style>
+</head>
+<body>
+<h1>ID卡编辑器</h1>
+<input type="file" id="background-input" accept="image/*">
+<br>
+<div id="canvas"></div>
+<br>
+<input type="file" id="avatar-input" accept="image/*">
+<br>
+<input type="text" id="text-input" placeholder="输入文字">
+<br>
+
+<script>
+    let backgroundImg;
+    let avatarImg;
+
+
+    const canvas = document.getElementById('canvas');
+    const avatarContainer = document.createElement('div');
+    avatarContainer.id = 'avatar-container';
+    const avatar = document.createElement('div');
+    avatar.id = 'avatar';
+    avatarContainer.appendChild(avatar);
+    canvas.appendChild(avatarContainer);
+
+    const textContainer = document.createElement('div');
+    textContainer.id = 'text-container';
+    const text = document.createElement('div');
+    text.id = 'text';
+    textContainer.appendChild(text);
+    canvas.appendChild(textContainer);
+
+    // 上传背景图片
+    document.getElementById('background-input').addEventListener('change', handleBackgroundChange);
+
+    // 上传用户头像
+    document.getElementById('avatar-input').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            avatarImg = e.target.result;
+            avatar.style.backgroundImage = `url(${avatarImg})`;
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // 文字编辑
+    document.getElementById('text-input').addEventListener('input', function (event) {
+        const textContent = event.target.value;
+        text.innerHTML = textContent;
+    });
+
+    // 头像拖动功能
+    avatarContainer.addEventListener('mousedown', function (event) {
+        event.preventDefault();
+        let prevX = event.clientX;
+        let prevY = event.clientY;
+        document.addEventListener('mousemove', moveAvatar);
+
+        document.addEventListener('mouseup', function () {
+            document.removeEventListener('mousemove', moveAvatar);
+        });
+
+        function moveAvatar(event) {
+            const newX = avatarContainer.offsetLeft + (event.clientX - prevX);
+            const newY = avatarContainer.offsetTop + (event.clientY - prevY);
+            avatarContainer.style.left = `${newX}px`;
+            avatarContainer.style.top = `${newY}px`;
+            prevX = event.clientX;
+            prevY = event.clientY;
+        }
+    });
+
+    // 文字拖动功能
+    textContainer.addEventListener('mousedown', function (event) {
+        event.preventDefault();
+        let prevX = event.clientX;
+        let prevY = event.clientY;
+        document.addEventListener('mousemove', moveText);
+
+        document.addEventListener('mouseup', function () {
+            document.removeEventListener('mousemove', moveText);
+        });
+
+        function moveText(event) {
+            const newX = textContainer.offsetLeft + (event.clientX - prevX);
+            const newY = textContainer.offsetTop + (event.clientY - prevY);
+            textContainer.style.left = `${newX}px`;
+            textContainer.style.top = `${newY}px`;
+            prevX = event.clientX;
+            prevY = event.clientY;
+        }
+    });
+
+    // Function to handle adjusting canvas size based on aspect ratio
+    function adjustCanvasSizeForAspectRatio(img) {
+        const aspectRatio = img.width / img.height;
+        const canvasWidth = canvas.offsetWidth;
+        const canvasHeight = canvasWidth / aspectRatio;
+        canvas.style.height = `${canvasHeight}px`;
+    }
+
+    // Function to handle background image change
+    function handleBackgroundChange(event) {
+        const file = event.target.files[0];
+        const img = new Image();
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            img.src = e.target.result;
+            img.onload = function () {
+                // Adjust canvas size based on aspect ratio
+                adjustCanvasSizeForAspectRatio(img);
+
+                // Set background image
+                backgroundImg = e.target.result;
+                canvas.style.backgroundImage = `url(${backgroundImg})`;
+            };
+        };
+        reader.readAsDataURL(file);
+    }
+</script>
+
+<!-- 省略部分代码 -->
+<input type="checkbox" id="avatar-round-input">
+<label for="avatar-round-input">头像是否圆角</label>
+<br>
+<input type="range" id="text-size-input" min="20" max="100" value="20">
+<br>
+<input type="range" id="avatar-size-input" min="20" max="300" value="100">
+<br>
+
+<!-- 省略部分代码 -->
+
+<script>
+    // 文字大小编辑
+    var var_textsize;
+    document.getElementById('text-size-input').addEventListener('input', function (event) {
+        const textSize = event.target.value;
+        var_textsize = textSize
+        text.style.fontSize = `${textSize}px`;
+    });
+
+    // 头像大小编辑
+    document.getElementById('avatar-size-input').addEventListener('input', function (event) {
+        const avatarSize = event.target.value;
+        avatar.style.width = `${avatarSize}px`;
+        avatar.style.height = `${avatarSize}px`;
+    });
+    // 头像圆角编辑
+    document.getElementById('avatar-round-input').addEventListener('change', function (event) {
+        const isRound = event.target.checked;
+        if (isRound) {
+            avatar.style.borderRadius = '50%';
+        } else {
+            avatar.style.borderRadius = '0';
+        }
+});
+
+    // 省略其他代码
+</script>
+<input type="color" id="text-color-input" value="#000000">
+<br>
+
+<!-- 省略部分代码 -->
+
+<script>
+    // 省略其他代码
+
+    // 文字颜色编辑
+    document.getElementById('text-color-input').addEventListener('input', function (event) {
+        const textColor = event.target.value;
+        text.style.color = textColor;
+    });
+    // 省略其他代码
+</script>
+<!-- 省略部分代码 -->
+
+<!-- 省略部分代码 -->
+
+<select id="font-family-select">
+    <option value="Arial">Arial</option>
+    <option value="Verdana">Verdana</option>
+    <option value="Helvetica">Helvetica</option>
+    <option value="Times New Roman">Times New Roman</option>
+    <option value="Courier New">Courier New</option>
+</select>
+<br>
+
+<!-- 省略部分代码 -->
+
+<script>
+    // 省略其他代码
+    // 文字字体编辑
+    document.getElementById('font-family-select').addEventListener('change', function (event) {
+        const fontFamily = event.target.value;
+        text.style.fontFamily = fontFamily;
+    });
+    // 省略其他代码
+</script>
+
+<!-- ... existing HTML code ... -->
+<script>
+    let templateData = {
+        background: {
+            size: { width: 0, height: 0 },
+            imageUrl: "",
+        },
+        avatar: {
+            size: { width: 0, height: 0 },
+            position: { left: 0, top: 0 },
+            imageUrl: "",
+        },
+        text: {
+            size: 20,
+            position: { left: 100, top: 120 },
+            content: "",
+            fontSize: "20px",
+            color: "#000000",
+            fontFamily: "Arial",
+        },
+    };
+
+    // ... existing code ...
+
+    // Save templateData as JSON
+    function saveTemplate() {
+        // Collect all the data before saving
+        templateData.background.imageUrl = "backgroundImg";
+        templateData.avatar.position = {
+            left: avatarContainer.offsetLeft,
+            top: avatarContainer.offsetTop };
+        templateData.text.size = text;
+        templateData.text.position = {
+            left: textContainer.offsetLeft,
+            top: textContainer.offsetTop };
+        templateData.text.color = text.style.color;
+        templateData.text.fontsize = text.style.fontSize;
+
+
+        const templateJson = JSON.stringify(templateData);
+        console.log(templateJson); // You can save this JSON data to a file, local storage, or a server
+        const blob = new Blob([templateJson], { type: 'application/json' });
+        const fileName = 'template.json';
+
+        if (window.navigator.msSaveOrOpenBlob) {
+          // For IE:
+          window.navigator.msSaveOrOpenBlob(blob, fileName);
+        } else {
+          // For other browsers:
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+
+    }
+</script>
+<button onclick="saveTemplate()">保存</button>
+<!--<button onclick="renderImage()">生成ID卡</butt on>-->
+
+<!-- 修改和旋转背景图的东西，省略部分代码 -->
+------------
+下面是动态增加文字列表的功能
+
+</body>
+</html>
