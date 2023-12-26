@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>ID卡编辑器</title>
+    {{ font_load }}
     <style>
         #canvas {
             border: 1px solid #000;
@@ -41,18 +42,30 @@
             font-size: 20px;
             font-family: Arial;
         }
+
+        .bordered {
+            border: 1px solid black;
+        }
     </style>
 </head>
 <body>
 <h1>ID卡编辑器</h1>
-<input type="file" id="background-input" accept="image/*">
+<br>
+<label for="background-input">
+    选择背景图像：
+    <input type="file" id="background-input" accept="image/*">
+</label>
 <br>
 <div id="canvas"></div>
 <br>
-<input type="file" id="avatar-input" accept="image/*">
+<label for="avatar-input">
+    选择头像图像：
+    <input type="file" id="avatar-input" accept="image/*">
+</label>
 <br>
-<input type="text" id="text-input" placeholder="输入文字">
-<br>
+
+<!--<input type="text" id="text-input" placeholder="输入文字">-->
+<!--<br>-->
 
 <script>
     let backgroundImg;
@@ -60,24 +73,22 @@
     const canvas = document.getElementById('canvas');
     const avatarContainer = document.createElement('div');
     avatarContainer.id = 'avatar-container';
-    const avatar = document.createElement('div');
-    avatar.id = 'avatar';
-    avatarContainer.appendChild(avatar);
-    canvas.appendChild(avatarContainer);
 
-    const textContainer = document.createElement('div');
-    textContainer.className = 'text-container';
-    const text = document.createElement('div');
-    // text.id = 'text';  // 我改成了 class 就可以了
-    text.className = 'text';  // 我改成了 class 就可以了
-    textContainer.appendChild(text);
-    canvas.appendChild(textContainer);
+    // const textContainer = document.createElement('div');
+    // textContainer.className = 'text-container';
+    // const text = document.createElement('div');
+    // text.className = 'text';  // 我改成了 class 就可以了
+    // textContainer.appendChild(text);
+    // canvas.appendChild(textContainer);  这个不需要创建了
 
     // 上传背景图片
     document.getElementById('background-input').addEventListener('change', handleBackgroundChange);
 
     // 上传用户头像
+    const avatar = document.createElement('div'); //上传完再创建
     document.getElementById('avatar-input').addEventListener('change', function (event) {
+        avatar.id = 'avatar';
+
         const file = event.target.files[0];
         const reader = new FileReader();
         reader.onload = function (e) {
@@ -85,13 +96,16 @@
             avatar.style.backgroundImage = `url(${avatarImg})`;
         };
         reader.readAsDataURL(file);
+
+        avatarContainer.appendChild(avatar);
+        canvas.appendChild(avatarContainer);
     });
 
-    // 文字编辑
-    document.getElementById('text-input').addEventListener('input', function (event) {
-        const textContent = event.target.value;
-        text.innerHTML = textContent;
-    });
+    // // 文字编辑
+    // document.getElementById('text-input').addEventListener('input', function (event) {
+    //     const textContent = event.target.value;
+    //     text.innerHTML = textContent;
+    // });
 
     // 头像拖动功能
     avatarContainer.addEventListener('mousedown', function (event) {
@@ -115,25 +129,25 @@
     });
 
     // 文字拖动功能
-    textContainer.addEventListener('mousedown', function (event) {
-        event.preventDefault();
-        let prevX = event.clientX;
-        let prevY = event.clientY;
-        document.addEventListener('mousemove', moveText);
-
-        document.addEventListener('mouseup', function () {
-            document.removeEventListener('mousemove', moveText);
-        });
-
-        function moveText(event) {
-            const newX = textContainer.offsetLeft + (event.clientX - prevX);
-            const newY = textContainer.offsetTop + (event.clientY - prevY);
-            textContainer.style.left = `${newX}px`;
-            textContainer.style.top = `${newY}px`;
-            prevX = event.clientX;
-            prevY = event.clientY;
-        }
-    });
+    // textContainer.addEventListener('mousedown', function (event) {
+    //     event.preventDefault();
+    //     let prevX = event.clientX;
+    //     let prevY = event.clientY;
+    //     document.addEventListener('mousemove', moveText);
+    //
+    //     document.addEventListener('mouseup', function () {
+    //         document.removeEventListener('mousemove', moveText);
+    //     });
+    //
+    //     function moveText(event) {
+    //         const newX = textContainer.offsetLeft + (event.clientX - prevX);
+    //         const newY = textContainer.offsetTop + (event.clientY - prevY);
+    //         textContainer.style.left = `${newX}px`;
+    //         textContainer.style.top = `${newY}px`;
+    //         prevX = event.clientX;
+    //         prevY = event.clientY;
+    //     }
+    // });
 
     // Function to handle adjusting canvas size based on aspect ratio
     function adjustCanvasSizeForAspectRatio(img) {
@@ -168,8 +182,8 @@
 <label for="avatar-round-input">头像是否圆角</label>
 <br>
 <!-- 省略部分代码 -->
-<input type="range" id="text-size-input" min="20" max="100" value="20">文字大小</input>
-<br>
+<!--<input type="range" id="text-size-input" min="20" max="100" value="20">文字大小</input>-->
+<!--<br>-->
 <input type="range" id="avatar-size-input" min="20" max="300" value="100">头像大小</input>
 <br>
 
@@ -177,12 +191,12 @@
 
 <script>
     // 文字大小编辑
-    var var_textsize;
-    document.getElementById('text-size-input').addEventListener('input', function (event) {
-        const textSize = event.target.value;
-        var_textsize = textSize
-        text.style.fontSize = `${textSize}px`;
-    });
+    // var var_textsize;
+    // document.getElementById('text-size-input').addEventListener('input', function (event) {
+    //     const textSize = event.target.value;
+    //     var_textsize = textSize
+    //     text.style.fontSize = `${textSize}px`;
+    // });
 
     // 头像大小编辑
     document.getElementById('avatar-size-input').addEventListener('input', function (event) {
@@ -202,86 +216,122 @@
 
     // 省略其他代码
 </script>
-<input type="color" id="text-color-input" value="#000000">
-<br>
+<!--<input type="color" id="text-color-input" value="#000000">-->
+<!--<br>-->
 
 <!-- 省略部分代码 -->
 
-<script>
-    // 省略其他代码
+<!--<script>-->
+<!--    // 省略其他代码-->
 
-    // 文字颜色编辑
-    document.getElementById('text-color-input').addEventListener('input', function (event) {
-        const textColor = event.target.value;
-        text.style.color = textColor;
-    });
-    // 省略其他代码
-</script>
+<!--    // 文字颜色编辑-->
+<!--    document.getElementById('text-color-input').addEventListener('input', function (event) {-->
+<!--        const textColor = event.target.value;-->
+<!--        text.style.color = textColor;-->
+<!--    });-->
+<!--    // 省略其他代码-->
+<!--</script>-->
 <!-- 省略部分代码 -->
 
 <!-- 省略部分代码 -->
-
-<select id="font-family-select">
-    <option value="Arial">Arial</option>
-    <option value="Verdana">Verdana</option>
-    <option value="Helvetica">Helvetica</option>
-    <option value="Times New Roman">Times New Roman</option>
-    <option value="Courier New">Courier New</option>
-</select>
-<br>
+<!--<select id="font-family-select">-->
+<!--    <option value="Arial">Arial</option>-->
+<!--    <option value="Verdana">Verdana</option>-->
+<!--    <option value="Helvetica">Helvetica</option>-->
+<!--    <option value="Times New Roman">Times New Roman</option>-->
+<!--    <option value="Courier New">Courier New</option>-->
+<!--</select>-->
+<!--<br>-->
 
 <!-- 省略部分代码 -->
 
-<script>
-    // 省略其他代码
-    // 文字字体编辑
-    document.getElementById('font-family-select').addEventListener('change', function (event) {
-        const fontFamily = event.target.value;
-        text.style.fontFamily = fontFamily;
-    });
-    // 省略其他代码
-</script>
+<!--<script>-->
+<!--    // 省略其他代码-->
+<!--    // 文字字体编辑-->
+<!--    document.getElementById('font-family-select').addEventListener('change', function (event) {-->
+<!--        const fontFamily = event.target.value;-->
+<!--        text.style.fontFamily = fontFamily;-->
+<!--    });-->
+<!--    // 省略其他代码-->
+<!--</script>-->
 
 <!-- ... existing HTML code ... -->
 <script>
-    let templateData = {
-        background: {
-            size: {width: 0, height: 0},
-            imageUrl: "",
-        },
-        avatar: {
-            size: {width: 0, height: 0},
-            position: {left: 0, top: 0},
-            imageUrl: "",
-        },
-        text: {
-            size: 20,
-            position: {left: 100, top: 120},
-            content: "",
-            fontSize: "20px",
-            color: "#000000",
-            fontFamily: "Arial",
-        },
-    };
+    class TextData {
+        constructor() {
+            this.position = {left: 100, top: 120};
+            this.content = "";
+            this.fontSize = "20px";
+            this.color = "#000000";
+            this.fontFamily = "Arial";
+            this.isTemplate = false;
+        }
+    }
+
+    class TemplateData {
+        constructor() {
+            this.background = {
+                size: {width: 0, height: 0},
+                imageUrl: "",
+            };
+            this.avatar = {
+                size: {width: 0, height: 0},
+                position: {left: 0, top: 0},
+                rounded: false, // 是否圆角
+                colName: "avatar", // 本地路径也是可以的吧
+            };
+            this.textList = []
+
+        }
+    }
 
     // ... existing code ...
 
     // Save templateData as JSON
     function saveTemplate() {
         // Collect all the data before saving
-        templateData.background.imageUrl = "backgroundImg";
+        var templateData = new TemplateData()
+        templateData.background.imageUrl = canvas.style.backgroundImage;
         templateData.avatar.position = {
             left: avatarContainer.offsetLeft,
             top: avatarContainer.offsetTop
         };
-        templateData.text.size = text;
-        templateData.text.position = {
-            left: textContainer.offsetLeft,
-            top: textContainer.offsetTop
-        };
-        templateData.text.color = text.style.color;
-        templateData.text.fontsize = text.style.fontSize;
 
+        const computedStyle = getComputedStyle(avatar);
+        const height = computedStyle.height;
+        const width = computedStyle.width;
+
+        let avatarHeight = avatar.style.height
+        let avatarWidth = avatar.style.width
+        if (avatarHeight === '') {
+            avatarHeight = height;
+        }
+        if (avatarWidth === '') {
+            avatarWidth = width;
+        }
+        templateData.avatar.size.height = avatarHeight;  // 高
+        templateData.avatar.size.width = avatarWidth;  // 宽
+        templateData.avatar.colName = avatarCol.value;  // 宽
+        // 遍历和记录textlist 列表的数据
+
+        children = canvas.children;
+        for (let i = 0; i < children.length; i++) {
+            if (children[i].className === "text-container") {
+                let textDiv = children[i].children[0];
+                let oneTextData = new TextData();
+                oneTextData.fontSize = textDiv.style.fontSize;
+                oneTextData.color = textDiv.style.color;
+                oneTextData.isTemplate = textDiv.isTemplate;
+                oneTextData.position.left = children[i].offsetLeft;
+                oneTextData.position.top = children[i].offsetTop;
+                oneTextData.fontFamily = textDiv.style.fontFamily;
+                oneTextData.content = textDiv.value;
+                oneTextData.colName = textDiv.style.fontSize;  // 对应的Colname 需要指定映射的
+                // ps 确实可以，但是我要自动化，要方便批量的。
+                templateData.textList.push(oneTextData);
+                console.log(oneTextData);
+            }
+        }
 
         const templateJson = JSON.stringify(templateData);
         console.log(templateJson); // You can save this JSON data to a file, local storage, or a server
@@ -305,14 +355,15 @@
 
     }
 </script>
-<button onclick="saveTemplate()">保存</button>
 <!--<button onclick="renderImage()">生成ID卡</butt on>-->
 
 <!-- 修改和旋转背景图的东西，省略部分代码 -->
-------------
-下面是动态增加文字列表的功能
+
+<h2>下面是动态增加文字列表的功能</h2>
 <button id="add-text-button">新增文字</button>
-<div id="text-list-container"></div>
+<div id="text-list-container">
+
+</div>
 
 <script>
     const addTextButton = document.getElementById('add-text-button');
@@ -328,11 +379,11 @@
     function createTextElement() {
         const textElement = document.createElement('div');
         textElement.classList.add('text-item');
+        textElement.className = "bordered"  // 增加边框线条
 
         const textContentInput = document.createElement('input');
         textContentInput.setAttribute('type', 'text');
         textContentInput.setAttribute('placeholder', '输入文字');
-        textContentInput.value = "请输入内容"
         textElement.appendChild(textContentInput);
 
 
@@ -348,6 +399,12 @@
         textColorInput.setAttribute('value', '#000000');
         textElement.appendChild(textColorInput);
 
+
+        // 设置对应的列，如果需要映射替换的话
+        const subInputColName = document.createElement('input');
+        subInputColName.placeholder = "请输入对应与csv表格的列名";
+        subInputColName.style.display = 'none';
+
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         // 设置 checkbox 的属性和事件处理程序
@@ -355,50 +412,77 @@
         checkbox.name = 'isTemplate';
         checkbox.value = 'false';
         checkbox.checked = false; // 设置为选中状态
-        checkbox.addEventListener('change', function () {
-            if (checkbox.checked) {
-                console.log('Checkbox is checked');
-            } else {
-                console.log('Checkbox is unchecked');
-            }
-        });
-        textElement.appendChild(checkbox);
+
+        const brDiv = document.createElement('br');
+        textElement.appendChild(brDiv);
+        const label = document.createElement('label');
+        label.textContent = "是否是映射列？："
+        label.appendChild(checkbox)
+        textElement.appendChild(label);
+        textElement.appendChild(subInputColName);  // 各自有各自的乐趣，不就好了， 这有什么不好的呢！
 
         const subText = document.createElement('div');
         subText.className = 'text';
+        subText.setAttribute("isTemplate", "false");
+
+        checkbox.addEventListener('change', function () {
+            if (checkbox.checked) {
+                console.log('Checkbox is checked');
+                subText.setAttribute("isTemplate", "true");
+                subInputColName.style.display = 'block';
+                subText.setAttribute("colName", subInputColName.value); // 改动了就顺便设置修改一下
+            } else {
+                console.log('Checkbox is unchecked');
+                subText.setAttribute("isTemplate", "false");
+                subInputColName.style.display = 'none';
+                subText.setAttribute("colName", ""); // 改动了就顺便设置修改一下
+
+            }
+        });
+        subInputColName.addEventListener("change", function () {
+            subText.setAttribute("colName", subInputColName.value); // 改动了就顺便设置修改一下
+        });
 
         const subTextContainer = document.createElement('div');
         subTextContainer.className = 'text-container';
-
         subTextContainer.appendChild(subText)
-
         subTextContainer.addEventListener('mousedown', function (event) {
-        event.preventDefault();
-        let prevX = event.clientX;
-        let prevY = event.clientY;
-        document.addEventListener('mousemove', moveText);
+            event.preventDefault();
+            let prevX = event.clientX;
+            let prevY = event.clientY;
+            document.addEventListener('mousemove', moveText);
 
-        document.addEventListener('mouseup', function () {
-            document.removeEventListener('mousemove', moveText);
+            document.addEventListener('mouseup', function () {
+                document.removeEventListener('mousemove', moveText);
+            });
+
+            function moveText(event) {
+                const newX = subTextContainer.offsetLeft + (event.clientX - prevX);
+                const newY = subTextContainer.offsetTop + (event.clientY - prevY);
+                subTextContainer.style.left = `${newX}px`;
+                subTextContainer.style.top = `${newY}px`;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
         });
-
-        function moveText(event) {
-            const newX = subTextContainer.offsetLeft + (event.clientX - prevX);
-            const newY = subTextContainer.offsetTop + (event.clientY - prevY);
-            subTextContainer.style.left = `${newX}px`;
-            subTextContainer.style.top = `${newY}px`;
-            prevX = event.clientX;
-            prevY = event.clientY;
-        }
-    });
         canvas.appendChild(subTextContainer)
 
+        //动态创建给每一个字体设置字体的selector； todo 还需要增加一个删除这个dom和对象的功能
+        const subFontSelector = document.createElement('select');  // 给这个元素创造一个 列表选择字体
+        var loadedFonts = Array.from(document.fonts);
+        loadedFonts.forEach(function (font) {
+            var option = document.createElement("option");
+            option.text = font.family;
+            option.value = font.family;
+            subFontSelector.add(option);
+        });
+        subFontSelector.addEventListener("change", function (event) {
+            let fontFamily = subFontSelector.value;
+            subText.style.fontFamily = fontFamily;
+        });
+        textElement.appendChild(subFontSelector)  // 增加select选择器
 
-        // canvas.appendChild(subText);
-
-
-
-
+        // canvas.appendChild(subText)
         textContentInput.addEventListener('input', function () {
             const subTextContent = event.target.value;
             subText.innerHTML = subTextContent;
@@ -410,21 +494,43 @@
             subText.content = textContentInput.value;
             // 在这里更新对应的 Text 对象的 content 属性 ； 直接设置不同对象的监听器
         });
-        textSizeInput.addEventListener('input', function () {
-            subText.fontSize = textSizeInput.value;
+        textSizeInput.addEventListener('input', function (event) {
+            const textSize = event.target.value;
+            subText.style.fontSize = `${textSize}px`;
+            // subText.fontSize = textSizeInput.value;
             // 在这里更新对应的 Text 对象的 size 属性
         });
-        textColorInput.addEventListener('input', function () {
-            subText.color = textColorInput.value;
+        textColorInput.addEventListener('input', function (event) {
+            const textColor = event.target.value;
+            subText.style.color = textColor;
             // 在这里更新对应的 Text 对象的 color 属性
         });
 
-
+        //增加删除文字元素的按钮操作，同时删除canvas上的文字元素
+        const deleteButton = document.createElement('button');
+        deleteButton.className = 'delete-btn';
+        deleteButton.textContent = '删除此文字';
+        deleteButton.addEventListener('click', function () {
+            textElement.remove(textElement); // 把父元素都删除
+            canvas.removeChild(subTextContainer);
+        });
+        textElement.appendChild(deleteButton);
         return textElement;
     }
 
 </script>
+<br><br>
 
+<label>
+    avatar name match col name:default is 'avatar'<br>
+    <input id='avatarCol' value='avatar' placeholder="avatar">
+</label>
+<br>
+<!--保存此次的配置-->
+
+<!--<select onclick="saveTemplate()">加载已保存的模版</>-->
+<button onclick="saveTemplate()">保存编辑的配置模版</button>
+<br>
 
 </body>
 </html>
