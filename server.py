@@ -1,15 +1,18 @@
 import json
 import os
 import zipfile
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import pandas as pd
-from flask import Flask, send_from_directory, render_template, request, jsonify
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask import Flask, send_from_directory, render_template, request, jsonify, abort
 from markupsafe import Markup
 
 from batch_process_util import render_image_by_config, remove_folder
 
 app = Flask(__name__)
+# 用于存储每个文件的上传时间和倒计时的字典
+history_files = {}
 
 # 设置静态资源目录
 project_root = os.path.dirname(os.path.abspath(__file__))
@@ -19,8 +22,16 @@ app.template_folder = "./"
 root_fonts_folder = os.path.join(app.static_folder, "fonts")
 output_folder = "output"  # 项目目录下的output路径
 app.debug = True  # 启用调试模式和自动重载
-
+expiration_second = 60 * 60
 os.makedirs(output_folder, exist_ok=True)
+
+
+@app.errorhandler(500)
+def handle_internal_server_error(error):
+    print("error log", error)
+    response = jsonify({'message': 'Internal Server Error', "error": str(error)})
+    response.status_code = 500
+    return response
 
 
 # 定义路由，用于处理静态文件请求
@@ -35,21 +46,49 @@ def homepage():
     return render_template('deit_id_card.html', font_load=Markup(template))
 
 
+def delete_folder_contents():
+    need_delete_keys = []
+    for folder_path, (upload_time, expiration_date) in history_files.items():
+        if datetime.now() >= expiration_date:
+            # 删除过期文件
+            if os.path.isdir(folder_path):
+                for filename in os.listdir(folder_path):
+                    file_path = os.path.join(folder_path, filename)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                os.rmdir(folder_path)
+            else:
+                os.remove(folder_path)  # 如果是单文件的话
+            # 从字典中删除文件信息
+            need_delete_keys.append(folder_path)
+    for key in need_delete_keys:
+        print(f"{key} 超时， 正在清理！")
+        del history_files[key]
+
+
+def set_delete_datetime(history_dict, key, second=expiration_second):
+    # 存储文件的上传时间和倒计时
+    expiration_date = datetime.now() + timedelta(seconds=second)
+    history_dict[key] = (datetime.now(), expiration_date)
+
+
 @app.route('/upload_folder', methods=['POST'])
 def upload():
     files = request.files.getlist('files[]')
 
     if files:
         save_folder = get_now_date()
-        full_folder_path = os.path.join(app.static_folder, "avatar", save_folder)
+        full_folder_path = os.path.join(app.static_folder, "user_config", save_folder)
         os.makedirs(full_folder_path, exist_ok=True)
-        static_path = os.path.join("static", "avatar", save_folder)
+        static_path = os.path.join("static", "user_config", save_folder)
         uploaded_files = []
         for file in files:
             filename = os.path.join(full_folder_path, file.filename)
             file.save(filename)
-            dir_path = os.path.join("static", "avatar")
+            dir_path = os.path.join("static", "user_config")
             uploaded_files.append(dir_path)
+
+        set_delete_datetime(history_files, static_path)
         return jsonify({'message': 'Files uploaded successfully',
                         'storeFolder': static_path,
                         "storeFiles": uploaded_files})
@@ -61,19 +100,19 @@ def upload():
 
 @app.route('/batch_processing', methods=['POST'])
 def batch_processing():
-    error1_response = jsonify({'message': 'error! static path is empty!'})
-    error2_response = jsonify({'message': "haven't uploaded config .json or .excel file!"})
+    error1 = 'error! static path is empty! please reupload config folder'
+    error2 = "haven't uploaded config .json or .excel file!"
     data = request.json
     static_path = data.get("static_path")
     end_filename = static_path.split('/')[-1]
-    if static_path == "":
-        return error1_response
+    if static_path == "" or not os.path.exists(static_path):
+        abort(500, description=error1)
     else:
         all_files = os.listdir(static_path)
         excel_files = [i for i in all_files if i.split(".")[-1] in ("csv", "xlsx")]
         json_files = [i for i in all_files if i.split(".")[-1] in ("json")]
         if len(excel_files) < 1 or len(json_files) < 1:
-            return error2_response
+            abort(500, description=error2)
 
         with open(os.path.join(static_path, json_files[0]), 'r') as file:
             config_dict = json.load(file)
@@ -99,9 +138,9 @@ def batch_processing():
 
         relative_path = os.path.join("static", "output", f"{end_filename}.zip")
         # 返回 ZIP 文件给用户下载
-        print("打包好了压缩包，给用户自己去下载")
         print("zip_path:", relative_path)
         remove_folder(output_full_folder)
+        set_delete_datetime(history_files, zip_path)
         return jsonify({'message': 'success!',
                         'outputPath': "/" + relative_path})
 
@@ -137,6 +176,11 @@ def get_now_date():
     formatted_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
     return formatted_date_time
 
+
+# 定时任务
+scheduler = BackgroundScheduler()
+scheduler.add_job(func=delete_folder_contents, trigger='interval', minutes=1)  # 每分钟执行一次删除操作
+scheduler.start()
 
 # 启动服务器
 if __name__ == '__main__':

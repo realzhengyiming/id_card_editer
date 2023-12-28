@@ -105,7 +105,8 @@ def render_image_by_config(df, config_dict, font_base_path, avatar_dir) -> Dict:
             col_name = text_data['colName']
             content = str(row_dict[col_name]) if is_template else text_data['content']  # 替换内容
             fontcolor = text_data['color']
-            fontcolor = eval(fontcolor.replace("rgb", ""))
+            print("fontcolor", fontcolor)
+            fontcolor = eval(fontcolor.replace("rgb", "")) if fontcolor else (0, 0, 0)  # 默认颜色
 
             fontsize = int(text_data['fontSize'].replace("px", ""))
             fontpose = (text_data['position']['left'], text_data['position']['top'])
@@ -138,6 +139,7 @@ def remove_folder(path):
         print(f"文件夹 '{path}' 及其所有内容已成功删除。")
     else:
         print(f"文件夹 '{path}' 不存在。")
+
 
 if __name__ == '__main__':
     font_base_path = "/Users/zhengyiming/PycharmProjects/id_card_editer/static/fonts"

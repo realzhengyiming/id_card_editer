@@ -473,8 +473,8 @@
         let avatarColName = templateData.avatar.colName;
         let colList = [avatarColName]
         for (let textData of templateData.textList) {
-            if(textData.colName == null || textData.colName === ''){
-            }else{
+            if (textData.colName == null || textData.colName === '') {
+            } else {
                 console.log(textData.colName);
                 let textColName = textData.colName;
                 colList.push(textColName);
@@ -482,6 +482,7 @@
         }
         // 创建表格对象
         let table = document.createElement("table");
+        table.id = "exampleTable";
         let note = document.createElement("p")
         note.contnet = "预览需要准备的列名"
         let previewDiv = document.getElementById("preview");
@@ -527,6 +528,36 @@
 <div id="preview" style="border:1px"></div>
 <br>
 <button onclick="previewConfig()">预览excel表格格式</button>
+<script>
+    function exportTableToCSV(tableId, filename) {
+        const table = document.getElementById(tableId);
+        const rows = Array.from(table.getElementsByTagName('tr'));
+        const csvContent = rows.map(row => {
+            const cells = Array.from(row.getElementsByTagName('td'));
+            return cells.map(cell => cell.textContent).join(',');
+        }).join('\n');
+
+        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+        if (navigator.msSaveBlob) {
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    }
+
+    // // 使用示例
+    // exportTableToCSV('myTable', 'table.csv');
+</script>
+<button onclick="exportTableToCSV('exampleTable','example_table.csv');">保存表格模版到本地</button>
 <!--<select onclick="saveTemplate()">加载已保存的模版</>-->
 <button onclick="saveTemplate()">保存配置模版到本地</button>
 <br>
@@ -657,6 +688,11 @@
             headers: {
                 'Content-Type': 'application/json'
             },
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP status ' + response.status + response.text());
+            }
+            return response.json();
         })
             .then(response => response.json())
             .then(data => {
@@ -674,7 +710,11 @@
                 document.body.removeChild(link);
 
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert(error);
+            });
+
     }
 
     function batchProcess() {
