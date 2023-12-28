@@ -136,6 +136,7 @@
             prevX = event.clientX;
             prevY = event.clientY;
         }
+
     });
 
     // Function to handle adjusting canvas size based on aspect ratio
@@ -161,6 +162,7 @@
                 // Set background image
                 backgroundImg = e.target.result;
                 canvas.style.backgroundImage = `url(${backgroundImg})`;
+                canvas.style.border = "none"
             };
         };
         reader.readAsDataURL(file);
