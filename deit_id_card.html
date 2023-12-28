@@ -6,7 +6,7 @@
     {{ font_load }}
     <style>
         #canvas {
-            /*border: 1px solid #000;*/
+            border: 2px solid #000;
             /*width: 500px; 宽改成自适应*/
             width: 500px;
             height: 500px;
@@ -91,13 +91,8 @@
 
         avatarContainer.appendChild(avatar);
         canvas.appendChild(avatarContainer);
+        canvas.style.border = 'none';  // 上传后去掉边框
     });
-
-    // // 文字编辑
-    // document.getElementById('text-input').addEventListener('input', function (event) {
-    //     const textContent = event.target.value;
-    //     text.innerHTML = textContent;
-    // });
 
     // 头像拖动功能
     avatarContainer.addEventListener('mousedown', function (event) {
@@ -120,27 +115,6 @@
         }
     });
 
-    // 文字拖动功能
-    // textContainer.addEventListener('mousedown', function (event) {
-    //     event.preventDefault();
-    //     let prevX = event.clientX;
-    //     let prevY = event.clientY;
-    //     document.addEventListener('mousemove', moveText);
-    //
-    //     document.addEventListener('mouseup', function () {
-    //         document.removeEventListener('mousemove', moveText);
-    //     });
-    //
-    //     function moveText(event) {
-    //         const newX = textContainer.offsetLeft + (event.clientX - prevX);
-    //         const newY = textContainer.offsetTop + (event.clientY - prevY);
-    //         textContainer.style.left = `${newX}px`;
-    //         textContainer.style.top = `${newY}px`;
-    //         prevX = event.clientX;
-    //         prevY = event.clientY;
-    //     }
-    // });
-
     // Function to handle adjusting canvas size based on aspect ratio
     function adjustCanvasSizeForAspectRatio(img) {
         const aspectRatio = img.width / img.height;
@@ -148,7 +122,6 @@
         const canvasHeight = canvasWidth / aspectRatio;
         canvas.style.height = `${canvasHeight}px`;
         canvas.style.width = `${canvasWidth}px`;
-        // canvas.style.height = `${canvasHeight}px`;
     }
 
     // Function to handle background image change
@@ -162,7 +135,6 @@
             img.onload = function () {
                 // Adjust canvas size based on aspect ratio
                 adjustCanvasSizeForAspectRatio(img);
-
                 // Set background image
                 backgroundImg = e.target.result;
                 canvas.style.backgroundImage = `url(${backgroundImg})`;
@@ -174,24 +146,16 @@
 
 <input type="checkbox" id="avatar-round-input">
 <label for="avatar-round-input">头像是否圆角</label>
+<label>
+    avatar mapping col name:
+    <input id='avatarCol' value='avatar' placeholder="avatar">
+</label>
 <br>
-<!-- 省略部分代码 -->
-<!--<input type="range" id="text-size-input" min="20" max="100" value="20">文字大小</input>-->
-<!--<br>-->
+<br>
 <input type="range" id="avatar-size-input" min="20" max="300" value="100">头像大小</input>
 <br>
 
-<!-- 省略部分代码 -->
-
 <script>
-    // 文字大小编辑
-    // var var_textsize;
-    // document.getElementById('text-size-input').addEventListener('input', function (event) {
-    //     const textSize = event.target.value;
-    //     var_textsize = textSize
-    //     text.style.fontSize = `${textSize}px`;
-    // });
-
     // 头像大小编辑
     document.getElementById('avatar-size-input').addEventListener('input', function (event) {
         const avatarSize = event.target.value;
@@ -210,46 +174,6 @@
 
     // 省略其他代码
 </script>
-<!--<input type="color" id="text-color-input" value="#000000">-->
-<!--<br>-->
-
-<!-- 省略部分代码 -->
-
-<!--<script>-->
-<!--    // 省略其他代码-->
-
-<!--    // 文字颜色编辑-->
-<!--    document.getElementById('text-color-input').addEventListener('input', function (event) {-->
-<!--        const textColor = event.target.value;-->
-<!--        text.style.color = textColor;-->
-<!--    });-->
-<!--    // 省略其他代码-->
-<!--</script>-->
-<!-- 省略部分代码 -->
-
-<!-- 省略部分代码 -->
-<!--<select id="font-family-select">-->
-<!--    <option value="Arial">Arial</option>-->
-<!--    <option value="Verdana">Verdana</option>-->
-<!--    <option value="Helvetica">Helvetica</option>-->
-<!--    <option value="Times New Roman">Times New Roman</option>-->
-<!--    <option value="Courier New">Courier New</option>-->
-<!--</select>-->
-<!--<br>-->
-
-<!-- 省略部分代码 -->
-
-<!--<script>-->
-<!--    // 省略其他代码-->
-<!--    // 文字字体编辑-->
-<!--    document.getElementById('font-family-select').addEventListener('change', function (event) {-->
-<!--        const fontFamily = event.target.value;-->
-<!--        text.style.fontFamily = fontFamily;-->
-<!--    });-->
-<!--    // 省略其他代码-->
-<!--</script>-->
-
-<!-- ... existing HTML code ... -->
 <script>
     class TextData {
         constructor() {
@@ -280,9 +204,6 @@
         }
     }
 
-    // ... existing code ...
-
-    // Save templateData as JSON
     function saveTemplate() {
         // Collect all the data before saving
         var templateData = new TemplateData()
@@ -352,9 +273,6 @@
 
     }
 </script>
-<!--<button onclick="renderImage()">生成ID卡</butt on>-->
-
-<!-- 修改和旋转背景图的东西，省略部分代码 -->
 
 <h2>下面是动态增加文字列表的功能</h2>
 <button id="add-text-button">新增文字</button>
@@ -519,12 +437,6 @@
 
 </script>
 <br><br>
-
-<label>
-    avatar name match col name:default is 'avatar'<br>
-    <input id='avatarCol' value='avatar' placeholder="avatar">
-</label>
-<br>
 <!--保存此次的配置-->
 
 <!--<select onclick="saveTemplate()">加载已保存的模版</>-->
@@ -532,9 +444,11 @@
 <br>
 
 <!--上传头像文件夹-->
+<h1>如果已经有配置文件， 可以直接选择从此处开始，选择上传和合成！</h1>
 <h2>Upload Folder</h2>
 <form id="uploadForm" enctype="multipart/form-data">
     <input type="file" id="folderInput" webkitdirectory directory multiple/>
+    <br>
     <button type="button" onclick="uploadFiles()">Upload</button>
 </form>
 <script>
@@ -659,7 +573,9 @@
 
 </script>
 
+<br><br>
 <button onclick="batchProcess()">开始批量处理</button>
+<br>
 <br>
 </body>
 </html>
