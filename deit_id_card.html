@@ -6,7 +6,8 @@
     {{ font_load }}
     <style>
         #canvas {
-            border: 1px solid #000;
+            /*border: 1px solid #000;*/
+            /*width: 500px; 宽改成自适应*/
             width: 500px;
             height: 500px;
             position: relative;
@@ -64,8 +65,6 @@
 </label>
 <br>
 
-<!--<input type="text" id="text-input" placeholder="输入文字">-->
-<!--<br>-->
 
 <script>
     let backgroundImg;
@@ -73,13 +72,6 @@
     const canvas = document.getElementById('canvas');
     const avatarContainer = document.createElement('div');
     avatarContainer.id = 'avatar-container';
-
-    // const textContainer = document.createElement('div');
-    // textContainer.className = 'text-container';
-    // const text = document.createElement('div');
-    // text.className = 'text';  // 我改成了 class 就可以了
-    // textContainer.appendChild(text);
-    // canvas.appendChild(textContainer);  这个不需要创建了
 
     // 上传背景图片
     document.getElementById('background-input').addEventListener('change', handleBackgroundChange);
@@ -155,6 +147,8 @@
         const canvasWidth = canvas.offsetWidth;
         const canvasHeight = canvasWidth / aspectRatio;
         canvas.style.height = `${canvasHeight}px`;
+        canvas.style.width = `${canvasWidth}px`;
+        // canvas.style.height = `${canvasHeight}px`;
     }
 
     // Function to handle background image change
@@ -275,6 +269,7 @@
                 imageUrl: "",
             };
             this.avatar = {
+                imageUrl: "",
                 size: {width: 0, height: 0},
                 position: {left: 0, top: 0},
                 rounded: false, // 是否圆角
@@ -292,6 +287,8 @@
         // Collect all the data before saving
         var templateData = new TemplateData()
         templateData.background.imageUrl = canvas.style.backgroundImage;
+        templateData.background.size.width = canvas.offsetWidth;
+        templateData.background.size.height = canvas.offsetHeight;
         templateData.avatar.position = {
             left: avatarContainer.offsetLeft,
             top: avatarContainer.offsetTop
@@ -321,12 +318,12 @@
                 let oneTextData = new TextData();
                 oneTextData.fontSize = textDiv.style.fontSize;
                 oneTextData.color = textDiv.style.color;
-                oneTextData.isTemplate = textDiv.isTemplate;
+                oneTextData.isTemplate = JSON.parse(textDiv.getAttribute("istemplate")); // 转化为布尔值
                 oneTextData.position.left = children[i].offsetLeft;
                 oneTextData.position.top = children[i].offsetTop;
                 oneTextData.fontFamily = textDiv.style.fontFamily;
-                oneTextData.content = textDiv.value;
-                oneTextData.colName = textDiv.style.fontSize;  // 对应的Colname 需要指定映射的
+                oneTextData.content = textDiv.content;
+                oneTextData.colName = textDiv.getAttribute("colname");  // 对应的Colname 需要指定映射的
                 // ps 确实可以，但是我要自动化，要方便批量的。
                 templateData.textList.push(oneTextData);
                 console.log(oneTextData);
@@ -410,7 +407,7 @@
         // 设置 checkbox 的属性和事件处理程序
         checkbox.id = 'isTemplate';
         checkbox.name = 'isTemplate';
-        checkbox.value = 'false';
+        checkbox.value = false;
         checkbox.checked = false; // 设置为选中状态
 
         const brDiv = document.createElement('br');
@@ -423,17 +420,17 @@
 
         const subText = document.createElement('div');
         subText.className = 'text';
-        subText.setAttribute("isTemplate", "false");
+        subText.setAttribute("isTemplate", false);
 
         checkbox.addEventListener('change', function () {
             if (checkbox.checked) {
                 console.log('Checkbox is checked');
-                subText.setAttribute("isTemplate", "true");
+                subText.setAttribute("isTemplate", true);
                 subInputColName.style.display = 'block';
                 subText.setAttribute("colName", subInputColName.value); // 改动了就顺便设置修改一下
             } else {
                 console.log('Checkbox is unchecked');
-                subText.setAttribute("isTemplate", "false");
+                subText.setAttribute("isTemplate", false);
                 subInputColName.style.display = 'none';
                 subText.setAttribute("colName", ""); // 改动了就顺便设置修改一下
 
@@ -469,13 +466,15 @@
 
         //动态创建给每一个字体设置字体的selector； todo 还需要增加一个删除这个dom和对象的功能
         const subFontSelector = document.createElement('select');  // 给这个元素创造一个 列表选择字体
-        var loadedFonts = Array.from(document.fonts);
+        let loadedFonts = Array.from(document.fonts);
         loadedFonts.forEach(function (font) {
-            var option = document.createElement("option");
+            let option = document.createElement("option");
             option.text = font.family;
             option.value = font.family;
             subFontSelector.add(option);
         });
+        subFontSelector.value = loadedFonts[0].family; // 默认第一个选项为默认选项
+        subText.style.fontFamily = loadedFonts[0].family; //  后续修改后再自动改变就可以
         subFontSelector.addEventListener("change", function (event) {
             let fontFamily = subFontSelector.value;
             subText.style.fontFamily = fontFamily;
@@ -532,5 +531,135 @@
 <button onclick="saveTemplate()">保存编辑的配置模版</button>
 <br>
 
+<!--上传头像文件夹-->
+<h2>Upload Folder</h2>
+<form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" id="folderInput" webkitdirectory directory multiple/>
+    <button type="button" onclick="uploadFiles()">Upload</button>
+</form>
+<script>
+    function checkFileExtension(filenames) {
+        let imageFlag = false;
+        let excelFlag = false;
+        let jsonFlag = false;
+
+        for (const filename of filenames) {
+            const extension = filename.split('.').pop().toLowerCase();
+            // 图片后缀名数组
+            const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+            // Excel 后缀名数组
+            const excelExtensions = ['xlsx', 'xls'];
+            // JSON 后缀名数组
+            const jsonExtensions = ['json'];
+
+            // 检查文件后缀名是否在对应的数组中
+            if (imageExtensions.includes(extension)) {
+                imageFlag = true;
+            } else if (excelExtensions.includes(extension)) {
+                excelFlag = true;
+            } else if (jsonExtensions.includes(extension)) {
+                jsonFlag = true;
+            } else {
+            }
+        }
+        const flags = [imageFlag, excelFlag, jsonFlag];
+        return flags.every(Boolean);   // 这几种文件都有的情况下才上传
+    }
+</script>
+<script>
+    let storeFolder = "";
+    let storeFiles = []
+
+    function upload() {
+        const input = document.getElementById('folderInput');
+        const files = input.files;
+
+        if (files.length > 0) {
+            const formData = new FormData();
+
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files[]', files[i], files[i].name);
+            }
+
+            fetch('/upload_folder', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    storeFolder = data.storeFolder;
+                    storeFiles = data.storeFiles;
+                    alert('上传成功！请点击批量处理！');
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            alert('No files selected!');
+            console.info('No files selected.');
+        }
+    }
+
+    function uploadFiles() {
+        if (storeFolder === '') {
+            upload();
+        } else {
+            // 确认一下需不需要重新上传
+            let result = confirm("你确定要重新上传所有文件吗？");
+            if (result) {
+                upload();
+                // 用户点击了“确定”按钮
+                // 执行相应的操作
+            } else {
+                // 用户点击了“取消”按钮或关闭了对话框
+                // 执行其他操作或不执行任何操作
+            }
+        }
+
+    }
+</script>
+<script>
+    //开始按照模版批量处理
+    //默认使用当前编辑中的模版
+    function sendBatchRequest(jsonData) {
+        fetch('/batch_processing', {
+            method: 'POST',
+            body: JSON.stringify(jsonData),
+            responseType: 'json',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                // data.storePath
+                console.log(data);
+                console.log(data.outputPath);
+                console.log("接收文件成功");
+                const link = document.createElement('a');
+                // link.innerText = "点击此处下载！"
+                let url = data.outputPath;
+                link.download = '';
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    function batchProcess() {
+        if (storeFolder === '') {
+            alert("请先把1生成的配置文件xx.json；2所有头像图片；3映射关系excel表一次性上传好");
+        } else {
+            const jsonData = {static_path: storeFolder};
+            sendBatchRequest(jsonData); // 启动项目，发送storeFoler路径
+        }
+    }
+
+</script>
+
+<button onclick="batchProcess()">开始批量处理</button>
+<br>
 </body>
 </html>
