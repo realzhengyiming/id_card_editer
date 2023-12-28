@@ -47,6 +47,29 @@
         .bordered {
             border: 1px solid black;
         }
+
+        /* 可选：自定义分割线样式 */
+        hr {
+            border: none;
+            border-top: 1px solid black;
+            margin: 20px 0;
+        }
+
+        /* 表格样式 */
+        table {
+            border-collapse: collapse; /* 合并单元格边框 */
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black; /* 单元格边框 */
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2; /* 表头背景色 */
+        }
     </style>
 </head>
 <body>
@@ -146,6 +169,7 @@
 
 <input type="checkbox" id="avatar-round-input">
 <label for="avatar-round-input">头像是否圆角</label>
+<br>
 <label>
     avatar mapping col name:
     <input id='avatarCol' value='avatar' placeholder="avatar">
@@ -183,6 +207,7 @@
             this.color = "#000000";
             this.fontFamily = "Arial";
             this.isTemplate = false;
+            this.colName = "";
         }
     }
 
@@ -204,8 +229,7 @@
         }
     }
 
-    function saveTemplate() {
-        // Collect all the data before saving
+    function getTemplate() {
         var templateData = new TemplateData()
         templateData.background.imageUrl = canvas.style.backgroundImage;
         templateData.background.size.width = canvas.offsetWidth;
@@ -250,7 +274,12 @@
                 console.log(oneTextData);
             }
         }
+        return templateData;
+    }
 
+    function saveTemplate() {
+        // Collect all the data before saving
+        let templateData = getTemplate();
         const templateJson = JSON.stringify(templateData);
         console.log(templateJson); // You can save this JSON data to a file, local storage, or a server
         const blob = new Blob([templateJson], {type: 'application/json'});
@@ -273,7 +302,7 @@
 
     }
 </script>
-
+<hr>
 <h2>下面是动态增加文字列表的功能</h2>
 <button id="add-text-button">新增文字</button>
 <div id="text-list-container">
@@ -301,7 +330,6 @@
         textContentInput.setAttribute('placeholder', '输入文字');
         textElement.appendChild(textContentInput);
 
-
         const textSizeInput = document.createElement('input');
         textSizeInput.setAttribute('type', 'range');
         textSizeInput.setAttribute('min', '20');
@@ -317,7 +345,7 @@
 
         // 设置对应的列，如果需要映射替换的话
         const subInputColName = document.createElement('input');
-        subInputColName.placeholder = "请输入对应与csv表格的列名";
+        subInputColName.placeholder = "输入对应表格映射的列名";
         subInputColName.style.display = 'none';
 
         const checkbox = document.createElement('input');
@@ -333,8 +361,9 @@
         const label = document.createElement('label');
         label.textContent = "是否是映射列？："
         label.appendChild(checkbox)
+        label.appendChild(subInputColName);  // 各自有各自的乐趣，不就好了， 这有什么不好的呢！
+
         textElement.appendChild(label);
-        textElement.appendChild(subInputColName);  // 各自有各自的乐趣，不就好了， 这有什么不好的呢！
 
         const subText = document.createElement('div');
         subText.className = 'text';
@@ -438,14 +467,74 @@
 </script>
 <br><br>
 <!--保存此次的配置-->
+<script>
+    function previewConfig() {
+        let templateData = getTemplate();
+        let avatarColName = templateData.avatar.colName;
+        let colList = [avatarColName]
+        for (let textData of templateData.textList) {
+            if(textData.colName == null || textData.colName === ''){
+            }else{
+                console.log(textData.colName);
+                let textColName = textData.colName;
+                colList.push(textColName);
+            }
+        }
+        // 创建表格对象
+        let table = document.createElement("table");
+        let note = document.createElement("p")
+        note.contnet = "预览需要准备的列名"
+        let previewDiv = document.getElementById("preview");
+        previewDiv.innerHTML = ""; // 清空父节点的所有子节点
+        previewDiv.appendChild(table)
+        // 虚拟数据
+        let data = [];
 
-<!--<select onclick="saveTemplate()">加载已保存的模版</>-->
-<button onclick="saveTemplate()">保存编辑的配置模版</button>
+        // 创建虚拟数据
+        for (let i = 1; i <= 2; i++) { // 填充两行数据
+            let rowData = {};
+            for (let col of colList) {
+                rowData[col] = col + "-" + i;
+            }
+            data.push(rowData);
+        }
+
+        // 创建表头行
+        let headerRow = document.createElement("tr");
+        for (let col of colList) {
+            let th = document.createElement("th");
+            th.textContent = col;
+            headerRow.appendChild(th);
+        }
+        table.appendChild(headerRow);
+
+        // 填充数据行
+        for (let row of data) {
+            let dataRow = document.createElement("tr");
+            for (let col of colList) {
+                let td = document.createElement("td");
+                td.textContent = row[col];
+                dataRow.appendChild(td);
+            }
+            table.appendChild(dataRow);
+        }
+
+    }
+
+</script>
 <br>
-
+<hr>
+<div id="preview" style="border:1px"></div>
+<br>
+<button onclick="previewConfig()">预览excel表格格式</button>
+<!--<select onclick="saveTemplate()">加载已保存的模版</>-->
+<button onclick="saveTemplate()">保存配置模版到本地</button>
+<br>
+<hr>
 <!--上传头像文件夹-->
 <h1>如果已经有配置文件， 可以直接选择从此处开始，选择上传和合成！</h1>
-<h2>Upload Folder</h2>
+<p>需要把命名好的图片（和excel表格内头像列同名，不用管文件后缀），json配置文件，excel 放到同一个文件夹内</p>
+<h2>选择配置文件夹进行上传</h2>
 <form id="uploadForm" enctype="multipart/form-data">
     <input type="file" id="folderInput" webkitdirectory directory multiple/>
     <br>
@@ -481,7 +570,31 @@
     }
 </script>
 <script>
-    let storeFolder = "";
+    //cookie 相关，用来减少重复上传
+    // 将变量保存到 Cookie 中
+    function setCookie(name, value, days) {
+        const expires = new Date();
+        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+        document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+    }
+
+    // 从 Cookie 中读取变量
+    function getCookie(name) {
+        const cookieName = `${name}=`;
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i];
+            while (cookie.charAt(0) === ' ') {
+                cookie = cookie.substring(1);
+            }
+            if (cookie.indexOf(cookieName) === 0) {
+                return decodeURIComponent(cookie.substring(cookieName.length, cookie.length));
+            }
+        }
+        return null;
+    }
+
+    let storeFolder = getCookie("storeFolder");
     let storeFiles = []
 
     function upload() {
@@ -504,6 +617,7 @@
                     console.log(data);
                     storeFolder = data.storeFolder;
                     storeFiles = data.storeFiles;
+                    setCookie("storeFolder", storeFolder, 7);
                     alert('上传成功！请点击批量处理！');
                 })
                 .catch(error => console.error('Error:', error));
@@ -514,6 +628,7 @@
     }
 
     function uploadFiles() {
+        console.log("check storeFolder:", storeFolder)
         if (storeFolder === '') {
             upload();
         } else {
@@ -573,6 +688,7 @@
 
 </script>
 
+<hr>
 <br><br>
 <button onclick="batchProcess()">开始批量处理</button>
 <br>

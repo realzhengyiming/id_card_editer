@@ -4,7 +4,7 @@ import zipfile
 from datetime import datetime
 
 import pandas as pd
-from flask import Flask, send_from_directory, render_template, request, jsonify, send_file
+from flask import Flask, send_from_directory, render_template, request, jsonify
 from markupsafe import Markup
 
 from batch_process_util import render_image_by_config, remove_folder
@@ -60,7 +60,6 @@ def upload():
 
 
 @app.route('/batch_processing', methods=['POST'])
-# 这个只是解析服务，然后批量生成还是交给js， 那就复杂起来； 一半python，一半js
 def batch_processing():
     error1_response = jsonify({'message': 'error! static path is empty!'})
     error2_response = jsonify({'message': "haven't uploaded config .json or .excel file!"})
@@ -137,8 +136,6 @@ def get_now_date():
     now = datetime.now()
     formatted_date_time = now.strftime("%Y-%m-%d %H:%M:%S")
     return formatted_date_time
-
-
 
 
 # 启动服务器
