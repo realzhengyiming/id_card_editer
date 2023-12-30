@@ -140,13 +140,3 @@ def remove_folder(path):
     else:
         print(f"文件夹 '{path}' 不存在。")
 
-
-if __name__ == '__main__':
-    font_base_path = "/Users/zhengyiming/PycharmProjects/id_card_editer/static/fonts"
-    avatar_dir = "/Users/zhengyiming/PycharmProjects/id_card_editer/static/avatar/2023-12-26 13:31:57"
-    images = render_image_by_config(df, config_dict, font_base_path, avatar_dir)
-    image
-
-    for i in images:
-        plt.imshow(i)
-        plt.show()
