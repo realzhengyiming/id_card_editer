@@ -118,7 +118,10 @@ def batch_processing():
             config_dict = json.load(file)
 
         # 读取 Excel 文件
-        df = pd.read_excel(os.path.join(static_path, excel_files[0]))
+        if excel_files[0].split(".")[-1] == "csv":
+            df = pd.read_csv(os.path.join(static_path, excel_files[0]))
+        else:
+            df = pd.read_excel(os.path.join(static_path, excel_files[0]))
         avatar_dir = static_path
         font_base_path = root_fonts_folder
         images_dict = render_image_by_config(df, config_dict, font_base_path, avatar_dir)
@@ -141,8 +144,10 @@ def batch_processing():
         print("zip_path:", relative_path)
         remove_folder(output_full_folder)
         set_delete_datetime(history_files, zip_path)
-        return jsonify({'message': 'success!',
-                        'outputPath': "/" + relative_path})
+        result = {'message': 'success!',
+                  'outputPath': "/" + relative_path}
+        print("result:", result)
+        return jsonify(result)
 
 
 # 加载本地的字体

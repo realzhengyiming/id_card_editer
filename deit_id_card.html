@@ -694,7 +694,7 @@
             if (!response.ok) {
                 throw new Error('HTTP status ' + response.status + response.text());
             }
-            return response.json();
+            return response;
         })
             .then(response => response.json())
             .then(data => {
