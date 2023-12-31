@@ -533,13 +533,19 @@
 <script>
     function exportTableToCSV(tableId, filename) {
         const table = document.getElementById(tableId);
+        const headers = Array.from(table.getElementsByTagName('th')).map(header => header.textContent);
         const rows = Array.from(table.getElementsByTagName('tr'));
-        const csvContent = rows.map(row => {
-            const cells = Array.from(row.getElementsByTagName('td'));
-            return cells.map(cell => cell.textContent).join(',');
-        }).join('\n');
+        const csvContent = [headers.join(',')];
 
-        const blob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+        rows.forEach(row => {
+            const cells = Array.from(row.getElementsByTagName('td'));
+            const rowData = cells.map(cell => cell.textContent).join(',');
+            csvContent.push(rowData);
+        });
+
+        const csvString = csvContent.join('\n');
+        const blob = new Blob([csvString], {type: 'text/csv;charset=utf-8;'});
+
         if (navigator.msSaveBlob) {
             navigator.msSaveBlob(blob, filename);
         } else {
