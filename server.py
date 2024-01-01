@@ -184,7 +184,7 @@ def get_now_date():
 
 # 定时任务
 scheduler = BackgroundScheduler()
-scheduler.add_job(func=delete_folder_contents, trigger='interval', minutes=1)  # 每分钟执行一次删除操作
+scheduler.add_job(func=delete_folder_contents, trigger='interval', minutes=1)  # 每分钟执行一次删除检查
 scheduler.start()
 
 # 启动服务器
