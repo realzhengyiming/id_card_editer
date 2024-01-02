@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html class="mdui">
+<head>
+    <meta charset="UTF-8">
+    <title>ID卡编辑器</title>
+    {{ font_load }}
+    <link rel="stylesheet" href="https://unpkg.com/mdui@2.0.3/mdui.css">
+    <script src="https://unpkg.com/mdui@2.0.3/mdui.global.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        :root,
+        .mdui-theme-light {
+          color: #000;
+          background-color: #fff;
+        }
+
+        .mdui-theme-dark {
+          color: #fff;
+          background-color: #000;
+        }
+
+        #canvas {
+            border: 2px solid #000;
+            /*width: 500px; 宽改成自适应*/
+            width: 500px;
+            height: 500px;
+            position: relative;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        #avatar-container {
+            position: absolute;
+            cursor: move;
+            transform-origin: top left;
+        }
+
+        #avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 0%;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .text-container {
+            position: absolute;
+            top: 120px;
+            left: 100px;
+            cursor: move;
+            transform-origin: top left;
+        }
+
+        .text {
+            font-size: 20px;
+            font-family: Arial;
+        }
+
+        .bordered {
+            border: 1px solid black;
+        }
+
+        /* 可选：自定义分割线样式 */
+        hr {
+            border: none;
+            border-top: 1px solid black;
+            margin: 20px 0;
+        }
+
+        /* 表格样式 */
+        table {
+            border-collapse: collapse; /* 合并单元格边框 */
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid black; /* 单元格边框 */
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2; /* 表头背景色 */
+        }
+    </style>
+</head>
+<body class="mdui-theme-primary-indigo mdui-theme-accent-pink">
+<div class="mdui-appbar mdui-shadow-0">
+
+    <h1>ID卡编辑器</h1>
+    <br>
+    <label for="background-input">
+        选择背景图像：
+        <input type="file" id="background-input" accept="image/*">
+    </label>
+    <br>
+    <div id="canvas"></div>
+    <br>
+    <label for="avatar-input">
+        选择头像图像：
+        <input type="file" id="avatar-input" accept="image/*">
+    </label>
+    <br>
+
+
+    <script>
+        let backgroundImg;
+        let avatarImg;
+        const canvas = document.getElementById('canvas');
+        const avatarContainer = document.createElement('div');
+        avatarContainer.id = 'avatar-container';
+
+        // 上传背景图片
+        document.getElementById('background-input').addEventListener('change', handleBackgroundChange);
+
+        // 上传用户头像
+        const avatar = document.createElement('div'); //上传完再创建
+        document.getElementById('avatar-input').addEventListener('change', function (event) {
+            avatar.id = 'avatar';
+
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                avatarImg = e.target.result;
+                avatar.style.backgroundImage = `url(${avatarImg})`;
+            };
+            reader.readAsDataURL(file);
+
+            avatarContainer.appendChild(avatar);
+            canvas.appendChild(avatarContainer);
+            canvas.style.border = 'none';  // 上传后去掉边框
+        });
+
+        // 头像拖动功能
+        avatarContainer.addEventListener('mousedown', function (event) {
+            event.preventDefault();
+            let prevX = event.clientX;
+            let prevY = event.clientY;
+            document.addEventListener('mousemove', moveAvatar);
+
+            document.addEventListener('mouseup', function () {
+                document.removeEventListener('mousemove', moveAvatar);
+            });
+
+            function moveAvatar(event) {
+                const newX = avatarContainer.offsetLeft + (event.clientX - prevX);
+                const newY = avatarContainer.offsetTop + (event.clientY - prevY);
+                avatarContainer.style.left = `${newX}px`;
+                avatarContainer.style.top = `${newY}px`;
+                prevX = event.clientX;
+                prevY = event.clientY;
+            }
+
+        });
+
+        // Function to handle adjusting canvas size based on aspect ratio
+        function adjustCanvasSizeForAspectRatio(img) {
+            const aspectRatio = img.width / img.height;
+            const canvasWidth = canvas.offsetWidth;
+            const canvasHeight = canvasWidth / aspectRatio;
+            canvas.style.height = `${canvasHeight}px`;
+            canvas.style.width = `${canvasWidth}px`;
+        }
+
+        // Function to handle background image change
+        function handleBackgroundChange(event) {
+            const file = event.target.files[0];
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                img.src = e.target.result;
+                img.onload = function () {
+                    // Adjust canvas size based on aspect ratio
+                    adjustCanvasSizeForAspectRatio(img);
+                    // Set background image
+                    backgroundImg = e.target.result;
+                    canvas.style.backgroundImage = `url(${backgroundImg})`;
+                    canvas.style.border = "none"
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+
+    <input type="checkbox" id="avatar-round-input">
+    <label for="avatar-round-input">头像是否圆角</label>
+    <br>
+    <label>
+        avatar mapping col name:
+        <input id='avatarCol' value='avatar' placeholder="avatar">
+    </label>
+    <br>
+    <br>
+<!--    <mdui-slider></mdui-slider>-->
+
+    <mdui-slider type="range" id="avatar-size-input" min="20" max="300" value="100">头像大小</mdui-slider>
+    <br>
+
+    <script>
+        // 头像大小编辑
+        document.getElementById('avatar-size-input').addEventListener('input', function (event) {
+            const avatarSize = event.target.value;
+            avatar.style.width = `${avatarSize}px`;
+            avatar.style.height = `${avatarSize}px`;
+        });
+        // 头像圆角编辑
+        document.getElementById('avatar-round-input').addEventListener('change', function (event) {
+            const isRound = event.target.checked;
+            if (isRound) {
+                avatar.style.borderRadius = '50%';
+            } else {
+                avatar.style.borderRadius = '0';
+            }
+        });
+
+        // 省略其他代码
+    </script>
+    <script>
+        class TextData {
+            constructor() {
+                this.position = {left: 100, top: 120};
+                this.content = "";
+                this.fontSize = "20px";
+                this.color = "#000000";
+                this.fontFamily = "Arial";
+                this.isTemplate = false;
+                this.colName = "";
+            }
+        }
+
+        class TemplateData {
+            constructor() {
+                this.background = {
+                    size: {width: 0, height: 0},
+                    imageUrl: "",
+                };
+                this.avatar = {
+                    imageUrl: "",
+                    size: {width: 0, height: 0},
+                    position: {left: 0, top: 0},
+                    rounded: false, // 是否圆角
+                    colName: "avatar", // 本地路径也是可以的吧
+                };
+                this.textList = []
+
+            }
+        }
+
+        function getTemplate() {
+            var templateData = new TemplateData()
+            templateData.background.imageUrl = canvas.style.backgroundImage;
+            templateData.background.size.width = canvas.offsetWidth;
+            templateData.background.size.height = canvas.offsetHeight;
+            templateData.avatar.position = {
+                left: avatarContainer.offsetLeft,
+                top: avatarContainer.offsetTop
+            };
+
+            const computedStyle = getComputedStyle(avatar);
+            const height = computedStyle.height;
+            const width = computedStyle.width;
+
+            let avatarHeight = avatar.style.height
+            let avatarWidth = avatar.style.width
+            if (avatarHeight === '') {
+                avatarHeight = height;
+            }
+            if (avatarWidth === '') {
+                avatarWidth = width;
+            }
+            templateData.avatar.size.height = avatarHeight;  // 高
+            templateData.avatar.size.width = avatarWidth;  // 宽
+            templateData.avatar.colName = avatarCol.value;  // 宽
+            // 遍历和记录textlist 列表的数据
+
+            children = canvas.children;
+            for (let i = 0; i < children.length; i++) {
+                if (children[i].className === "text-container") {
+                    let textDiv = children[i].children[0];
+                    let oneTextData = new TextData();
+                    oneTextData.fontSize = textDiv.style.fontSize;
+                    oneTextData.color = textDiv.style.color;
+                    oneTextData.isTemplate = JSON.parse(textDiv.getAttribute("istemplate")); // 转化为布尔值
+                    oneTextData.position.left = children[i].offsetLeft;
+                    oneTextData.position.top = children[i].offsetTop;
+                    oneTextData.fontFamily = textDiv.style.fontFamily;
+                    oneTextData.content = textDiv.content;
+                    oneTextData.colName = textDiv.getAttribute("colname");  // 对应的Colname 需要指定映射的
+                    // ps 确实可以，但是我要自动化，要方便批量的。
+                    templateData.textList.push(oneTextData);
+                    console.log(oneTextData);
+                }
+            }
+            return templateData;
+        }
+
+        function saveTemplate() {
+            // Collect all the data before saving
+            let templateData = getTemplate();
+            const templateJson = JSON.stringify(templateData);
+            console.log(templateJson); // You can save this JSON data to a file, local storage, or a server
+            const blob = new Blob([templateJson], {type: 'application/json'});
+            const fileName = 'template.json';
+
+            if (window.navigator.msSaveOrOpenBlob) {
+                // For IE:
+                window.navigator.msSaveOrOpenBlob(blob, fileName);
+            } else {
+                // For other browsers:
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+
+        }
+    </script>
+    <hr>
+    <h2>下面是动态增加文字列表的功能</h2>
+    <mdui-button id="add-text-button" icon="add">新增文字</mdui-button>
+    <div id="text-list-container">
+
+    </div>
+
+    <script>
+        const addTextButton = document.getElementById('add-text-button');
+        const textListContainer = document.getElementById('text-list-container');
+        const textList = [];
+
+        addTextButton.addEventListener('click', function () {
+            const newText = createTextElement();
+            textList.push(newText);
+            textListContainer.appendChild(newText);
+        });
+
+        function createTextElement() {
+            const textElement = document.createElement('div');
+            textElement.classList.add('text-item');
+            textElement.className = "bordered"  // 增加边框线条
+
+            const textContentInput = document.createElement('input');
+            textContentInput.setAttribute('type', 'text');
+            textContentInput.setAttribute('placeholder', '输入文字');
+            textElement.appendChild(textContentInput);
+
+            const textSizeInput = document.createElement('input');
+            textSizeInput.setAttribute('type', 'range');
+            textSizeInput.setAttribute('min', '20');
+            textSizeInput.setAttribute('max', '100');
+            textSizeInput.setAttribute('value', '20');
+            textElement.appendChild(textSizeInput);
+
+            const textColorInput = document.createElement('input');
+            textColorInput.setAttribute('type', 'color');
+            textColorInput.setAttribute('value', '#000000');
+            textElement.appendChild(textColorInput);
+
+
+            // 设置对应的列，如果需要映射替换的话
+            const subInputColName = document.createElement('input');
+            subInputColName.placeholder = "输入对应表格映射的列名";
+            subInputColName.style.display = 'none';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            // 设置 checkbox 的属性和事件处理程序
+            checkbox.id = 'isTemplate';
+            checkbox.name = 'isTemplate';
+            checkbox.value = false;
+            checkbox.checked = false; // 设置为选中状态
+
+            const brDiv = document.createElement('br');
+            textElement.appendChild(brDiv);
+            const label = document.createElement('label');
+            label.textContent = "是否是映射列？："
+            label.appendChild(checkbox)
+            label.appendChild(subInputColName);  // 各自有各自的乐趣，不就好了， 这有什么不好的呢！
+
+            textElement.appendChild(label);
+
+            const subText = document.createElement('div');
+            subText.className = 'text';
+            subText.setAttribute("isTemplate", false);
+
+            checkbox.addEventListener('change', function () {
+                if (checkbox.checked) {
+                    console.log('Checkbox is checked');
+                    subText.setAttribute("isTemplate", true);
+                    subInputColName.style.display = 'block';
+                    subText.setAttribute("colName", subInputColName.value); // 改动了就顺便设置修改一下
+                } else {
+                    console.log('Checkbox is unchecked');
+                    subText.setAttribute("isTemplate", false);
+                    subInputColName.style.display = 'none';
+                    subText.setAttribute("colName", ""); // 改动了就顺便设置修改一下
+
+                }
+            });
+            subInputColName.addEventListener("change", function () {
+                subText.setAttribute("colName", subInputColName.value); // 改动了就顺便设置修改一下
+            });
+
+            const subTextContainer = document.createElement('div');
+            subTextContainer.className = 'text-container';
+            subTextContainer.appendChild(subText)
+            subTextContainer.addEventListener('mousedown', function (event) {
+                event.preventDefault();
+                let prevX = event.clientX;
+                let prevY = event.clientY;
+                document.addEventListener('mousemove', moveText);
+
+                document.addEventListener('mouseup', function () {
+                    document.removeEventListener('mousemove', moveText);
+                });
+
+                function moveText(event) {
+                    const newX = subTextContainer.offsetLeft + (event.clientX - prevX);
+                    const newY = subTextContainer.offsetTop + (event.clientY - prevY);
+                    subTextContainer.style.left = `${newX}px`;
+                    subTextContainer.style.top = `${newY}px`;
+                    prevX = event.clientX;
+                    prevY = event.clientY;
+                }
+            });
+            canvas.appendChild(subTextContainer)
+
+            //动态创建给每一个字体设置字体的selector； todo 还需要增加一个删除这个dom和对象的功能
+            const subFontSelector = document.createElement('select');  // 给这个元素创造一个 列表选择字体
+            let loadedFonts = Array.from(document.fonts);
+            loadedFonts.forEach(function (font) {
+                let option = document.createElement("option");
+                option.text = font.family;
+                option.value = font.family;
+                subFontSelector.add(option);
+            });
+            subFontSelector.value = loadedFonts[0].family; // 默认第一个选项为默认选项
+            subText.style.fontFamily = loadedFonts[0].family; //  后续修改后再自动改变就可以
+            subFontSelector.addEventListener("change", function (event) {
+                let fontFamily = subFontSelector.value;
+                subText.style.fontFamily = fontFamily;
+            });
+            textElement.appendChild(subFontSelector)  // 增加select选择器
+
+            // canvas.appendChild(subText)
+            textContentInput.addEventListener('input', function () {
+                const subTextContent = event.target.value;
+                subText.innerHTML = subTextContent;
+            });
+
+            textContentInput.addEventListener('input', function () {
+                const subTextContent = event.target.value;
+                subText.innerHTML = subTextContent;
+                subText.content = textContentInput.value;
+                // 在这里更新对应的 Text 对象的 content 属性 ； 直接设置不同对象的监听器
+            });
+            textSizeInput.addEventListener('input', function (event) {
+                const textSize = event.target.value;
+                subText.style.fontSize = `${textSize}px`;
+                // subText.fontSize = textSizeInput.value;
+                // 在这里更新对应的 Text 对象的 size 属性
+            });
+            textColorInput.addEventListener('input', function (event) {
+                const textColor = event.target.value;
+                subText.style.color = textColor;
+                // 在这里更新对应的 Text 对象的 color 属性
+            });
+
+            //增加删除文字元素的按钮操作，同时删除canvas上的文字元素
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete-btn';
+            deleteButton.textContent = '删除此文字';
+            deleteButton.addEventListener('click', function () {
+                textElement.remove(textElement); // 把父元素都删除
+                canvas.removeChild(subTextContainer);
+            });
+            textElement.appendChild(deleteButton);
+            return textElement;
+        }
+
+    </script>
+    <br><br>
+    <!--保存此次的配置-->
+    <script>
+        function previewConfig() {
+            let templateData = getTemplate();
+            let avatarColName = templateData.avatar.colName;
+            let colList = [avatarColName]
+            for (let textData of templateData.textList) {
+                if (textData.colName == null || textData.colName === '') {
+                } else {
+                    console.log(textData.colName);
+                    let textColName = textData.colName;
+                    colList.push(textColName);
+                }
+            }
+            // 创建表格对象
+            let table = document.createElement("table");
+            table.id = "exampleTable";
+            table.className = "mdui-table";
+            let note = document.createElement("p")
+            note.contnet = "预览需要准备的列名"
+            let previewDiv = document.getElementById("preview");
+            previewDiv.innerHTML = ""; // 清空父节点的所有子节点
+            previewDiv.appendChild(table)
+            // 虚拟数据
+            let data = [];
+
+            // 创建虚拟数据
+            for (let i = 1; i <= 2; i++) { // 填充两行数据
+                let rowData = {};
+                for (let col of colList) {
+                    rowData[col] = col + "-" + i;
+                }
+                data.push(rowData);
+            }
+
+            // 创建表头行
+            let headerRow = document.createElement("tr");
+            for (let col of colList) {
+                let th = document.createElement("th");
+                th.textContent = col;
+                headerRow.appendChild(th);
+            }
+            table.appendChild(headerRow);
+
+            // 填充数据行
+            for (let row of data) {
+                let dataRow = document.createElement("tr");
+                for (let col of colList) {
+                    let td = document.createElement("td");
+                    td.textContent = row[col];
+                    dataRow.appendChild(td);
+                }
+                table.appendChild(dataRow);
+            }
+
+        }
+
+    </script>
+    <br>
+    <hr>
+    <div id="preview" style="border:1px"></div>
+    <br>
+    <button onclick="previewConfig()">预览excel表格格式</button>
+    <script>
+        function exportTableToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const headers = Array.from(table.getElementsByTagName('th')).map(header => header.textContent);
+            const rows = Array.from(table.getElementsByTagName('tr'));
+            const csvContent = [headers.join(',')];
+
+            rows.forEach(row => {
+                const cells = Array.from(row.getElementsByTagName('td'));
+                const rowData = cells.map(cell => cell.textContent).join(',');
+                csvContent.push(rowData);
+            });
+
+            const csvString = csvContent.join('\n');
+            const blob = new Blob([csvString], {type: 'text/csv;charset=utf-8;'});
+
+            if (navigator.msSaveBlob) {
+                navigator.msSaveBlob(blob, filename);
+            } else {
+                const link = document.createElement('a');
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute('href', url);
+                    link.setAttribute('download', filename);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            }
+        }
+
+        // // 使用示例
+        // exportTableToCSV('myTable', 'table.csv');
+    </script>
+    <button onclick="exportTableToCSV('exampleTable','example_table.csv');">保存表格模版到本地</button>
+    <!--<select onclick="saveTemplate()">加载已保存的模版</>-->
+    <button onclick="saveTemplate()">保存配置模版到本地</button>
+    <br>
+    <hr>
+    <!--上传头像文件夹-->
+    <h1>如果已经有配置文件， 可以直接选择从此处开始，选择上传和合成！</h1>
+    <p>需要把命名好的图片（和excel表格内头像列同名，不用管文件后缀），json配置文件，excel 放到同一个文件夹内</p>
+    <h2>选择配置文件夹进行上传</h2>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="folderInput" webkitdirectory directory multiple/>
+        <br>
+        <button type="button" onclick="uploadFiles()">Upload</button>
+    </form>
+    <script>
+        function checkFileExtension(filenames) {
+            let imageFlag = false;
+            let excelFlag = false;
+            let jsonFlag = false;
+
+            for (const filename of filenames) {
+                const extension = filename.split('.').pop().toLowerCase();
+                // 图片后缀名数组
+                const imageExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+                // Excel 后缀名数组
+                const excelExtensions = ['xlsx', 'xls'];
+                // JSON 后缀名数组
+                const jsonExtensions = ['json'];
+
+                // 检查文件后缀名是否在对应的数组中
+                if (imageExtensions.includes(extension)) {
+                    imageFlag = true;
+                } else if (excelExtensions.includes(extension)) {
+                    excelFlag = true;
+                } else if (jsonExtensions.includes(extension)) {
+                    jsonFlag = true;
+                } else {
+                }
+            }
+            const flags = [imageFlag, excelFlag, jsonFlag];
+            return flags.every(Boolean);   // 这几种文件都有的情况下才上传
+        }
+    </script>
+    <script>
+        //cookie 相关，用来减少重复上传
+        // 将变量保存到 Cookie 中
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = `${name}=${encodeURIComponent(value)};expires=${expires.toUTCString()};path=/`;
+        }
+
+        // 从 Cookie 中读取变量
+        function getCookie(name) {
+            const cookieName = `${name}=`;
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i];
+                while (cookie.charAt(0) === ' ') {
+                    cookie = cookie.substring(1);
+                }
+                if (cookie.indexOf(cookieName) === 0) {
+                    return decodeURIComponent(cookie.substring(cookieName.length, cookie.length));
+                }
+            }
+            return null;
+        }
+
+        let storeFolder = getCookie("storeFolder");
+        let storeFiles = []
+
+        function upload() {
+            const input = document.getElementById('folderInput');
+            const files = input.files;
+
+            if (files.length > 0) {
+                const formData = new FormData();
+
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('files[]', files[i], files[i].name);
+                }
+
+                fetch('/upload_folder', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        storeFolder = data.storeFolder;
+                        storeFiles = data.storeFiles;
+                        setCookie("storeFolder", storeFolder, 7);
+                        alert('上传成功！请点击批量处理！');
+                    })
+                    .catch(error => console.error('Error:', error));
+            } else {
+                alert('No files selected!');
+                console.info('No files selected.');
+            }
+        }
+
+        function uploadFiles() {
+            console.log("check storeFolder:", storeFolder)
+            if (storeFolder === '') {
+                upload();
+            } else {
+                // 确认一下需不需要重新上传
+                let result = confirm("你确定要重新上传所有文件吗？");
+                if (result) {
+                    upload();
+                    // 用户点击了“确定”按钮
+                    // 执行相应的操作
+                } else {
+                    // 用户点击了“取消”按钮或关闭了对话框
+                    // 执行其他操作或不执行任何操作
+                }
+            }
+
+        }
+    </script>
+    <script>
+        //开始按照模版批量处理
+        //默认使用当前编辑中的模版
+        function sendBatchRequest(jsonData) {
+            fetch('/batch_processing', {
+                method: 'POST',
+                body: JSON.stringify(jsonData),
+                responseType: 'json',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP status ' + response.status + response.text());
+                }
+                return response;
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // data.storePath
+                    console.log(data);
+                    console.log(data.outputPath);
+                    console.log("接收文件成功");
+                    const link = document.createElement('a');
+                    // link.innerText = "点击此处下载！"
+                    let url = data.outputPath;
+                    link.download = '';
+                    link.href = url;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(error);
+                });
+
+        }
+
+        function batchProcess() {
+            if (storeFolder === '') {
+                alert("请先把1生成的配置文件xx.json；2所有头像图片；3映射关系excel表一次性上传好");
+            } else {
+                const jsonData = {static_path: storeFolder};
+                sendBatchRequest(jsonData); // 启动项目，发送storeFoler路径
+            }
+        }
+
+    </script>
+
+    <hr>
+    <br><br>
+    <button onclick="batchProcess()">开始批量处理</button>
+    <br>
+    <br></div>
+</body>
+</html>

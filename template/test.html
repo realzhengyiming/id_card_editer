@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>计时器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.3/css/mdui.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mdui/0.4.3/js/mdui.min.js"></script>
+
+    <script type="text/javascript">
+
+        var timerID; // 定义计时器ID
+        var seconds = 0; // 定义秒数
+
+        function startTimer() {
+            timerID = setInterval(updateTimer, 1000); // 开始计时器
+        }
+
+        function stopTimer() {
+            clearInterval(timerID); // 停止计时器
+        }
+
+        function resetTimer() {
+            seconds = 0; // 重置秒数
+            updateTimer(); // 更新计时器显示
+        }
+
+        function updateTimer() {
+            seconds++; // 秒数加1
+
+            var hours = Math.floor(seconds / 3600); // 计算小时数
+            var minutes = Math.floor((seconds % 3600) / 60); // 计算分钟数
+            var secs = Math.floor(seconds % 60); // 计算剩余秒数
+
+            // 将时间格式化为时分秒格式，例如：01:23:45
+            var timeString = (hours < 10 ? "0" + hours : hours)
+                + ":" + (minutes < 10 ? "0" + minutes : minutes)
+                + ":" + (secs < 10 ? "0" + secs : secs);
+
+            document.getElementById("timer").innerHTML = timeString; // 更新计时器显示
+        }
+    </script>
+</head>
+<body class="mdui-theme-primary-blue mdui-theme-accent-blue">
+<h1 class="mdui-typo-display-1 mdui-text-color-theme">计时器</h1>
+<div id="timer" class="mdui-typo-title mdui-text-color-theme-accent">00:00:00</div>
+<button class="mdui-btn mdui-color-theme-accent mdui-ripple" onclick="startTimer()">启动</button>
+<button class="mdui-btn mdui-color-theme-accent mdui-ripple" onclick="stopTimer()">停止</button>
+<button class="mdui-btn mdui-color-theme-accent mdui-ripple" onclick="resetTimer()">重置</button>
+
+<mdui-fab extended icon="edit">Compose</mdui-fab>
+<link rel="stylesheet" href="https://unpkg.com/mdui@2.0.3/mdui.css">
+<script src="https://unpkg.com/mdui@2.0.3/mdui.global.js"></script>
+
+<mdui-button class="btn">点我</mdui-button>
+
+<script>
+  document.querySelector('.btn').addEventListener('click', () => {
+    mdui.snackbar({ message: '点击了按钮' });
+  });
+</script>
+</body>
+</html>

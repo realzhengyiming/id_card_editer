@@ -18,7 +18,7 @@ history_files = {}
 project_root = os.path.dirname(os.path.abspath(__file__))
 
 app.static_folder = 'static'
-app.template_folder = "./"
+app.template_folder = "template"
 root_fonts_folder = os.path.join(app.static_folder, "fonts")
 output_folder = "output"  # 项目目录下的output路径
 app.debug = True  # 启用调试模式和自动重载
@@ -44,6 +44,12 @@ def serve_static(path):
 def homepage():
     template = html_load_font()
     return render_template('deit_id_card.html', font_load=Markup(template))
+
+
+@app.route("/test")
+def testpage():
+    template = html_load_font()
+    return render_template('test.html')
 
 
 def delete_folder_contents():
