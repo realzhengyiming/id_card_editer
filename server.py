@@ -22,7 +22,7 @@ app.template_folder = "template"
 root_fonts_folder = os.path.join(app.static_folder, "fonts")
 output_folder = "output"  # 项目目录下的output路径
 app.debug = True  # 启用调试模式和自动重载
-expiration_second = 60 * 60
+expiration_second = 60 * 60 * 24  # 1day
 os.makedirs(output_folder, exist_ok=True)
 
 
