@@ -72,10 +72,6 @@ def render_image_by_config(df, config_dict, font_base_path, avatar_dir) -> Dict:
 
     background_resized_raw = backgroup_img.resize((x, y))
 
-    # 创建一个可绘制对象
-    templated = [i for i in config_dict['textList'] if i.get("isTemplate")]
-    untemplated = [i for i in config_dict['textList'] if i.get("isTemplate") is False]
-
     # 读取头像数据模版配
     image_filenames = [i for i in os.listdir(avatar_dir) if i.split(".")[-1] in ("png", "jpeg", "jpg", "gif")]
     image_dict = {i.split(".")[0]: i for i in image_filenames}  # 减少便利次数
@@ -97,6 +93,8 @@ def render_image_by_config(df, config_dict, font_base_path, avatar_dir) -> Dict:
         width = int(avatar_dict['size']['width'].strip("px"))
         height = int(avatar_dict['size']['height'].strip("px"))
         avatar_cut = cut_avatar(avatar_image, (width, height), is_radias=is_radias)
+        print("is_radias", is_radias)
+        avatar_cut.show()
 
         background_resized = paste_with_transparency(background_resized, avatar_cut, avatar_position)
 

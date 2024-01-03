@@ -220,8 +220,11 @@
             const isRound = event.target.checked;
             if (isRound) {
                 avatar.style.borderRadius = '50%';
+                avatar.setAttribute("rounded", "true");
             } else {
                 avatar.style.borderRadius = '0';
+                avatar.setAttribute("rounded", "false");
+
             }
         });
 
@@ -282,7 +285,10 @@
             }
             templateData.avatar.size.height = avatarHeight;  // 高
             templateData.avatar.size.width = avatarWidth;  // 宽
+
+            let avatarCol = document.getElementById("avatarCol")
             templateData.avatar.colName = avatarCol.value;  // 宽
+            templateData.avatar.rounded = avatar.getAttribute("rounded") === "true";
             // 遍历和记录textlist 列表的数据
 
             children = canvas.children;
@@ -416,7 +422,7 @@
             checkbox.addEventListener('change', function () {
                 if (checkbox.checked) {
                     console.log('Checkbox is checked');
-                    subText.setAttribute("isTemplate", true);
+                    subText.setAttribute("isTemplate", "true");
                     // subInputColName.style.display = 'block';
                     subInputColName.removeAttribute('disabled')
 
