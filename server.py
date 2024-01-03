@@ -21,7 +21,6 @@ app.static_folder = 'static'
 app.template_folder = "template"
 root_fonts_folder = os.path.join(app.static_folder, "fonts")
 output_folder = "output"  # 项目目录下的output路径
-app.debug = True  # 启用调试模式和自动重载
 expiration_second = 60 * 60 * 24  # 1day
 os.makedirs(output_folder, exist_ok=True)
 
@@ -193,8 +192,7 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(func=delete_folder_contents, trigger='interval', minutes=1)  # 每分钟执行一次删除检查
 scheduler.start()
 
-# 启动服务器
-# asgi_app = WsgiToAsgi(app)
-# if __name__ == '__main__':
-#     app.run(host='0.0.0.0', port=6666)
-#     # app.run()
+# 测试时候启动服务器
+if __name__ == '__main__':
+    app.debug = True  # 启用调试模式和自动重载
+    app.run(host='0.0.0.0', port=8000)
