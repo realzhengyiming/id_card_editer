@@ -1,0 +1,6 @@
+version: '3'
+services:
+  id_card_editer_app:
+    build: .
+    ports:
+      - "8000:5000"

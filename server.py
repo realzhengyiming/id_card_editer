@@ -194,5 +194,7 @@ scheduler.add_job(func=delete_folder_contents, trigger='interval', minutes=1)  #
 scheduler.start()
 
 # 启动服务器
-if __name__ == '__main__':
-    app.run()
+# asgi_app = WsgiToAsgi(app)
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=6666)
+#     # app.run()
