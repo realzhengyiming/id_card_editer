@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>ID卡编辑器</title>
     <link rel="icon" href="/static/id-card2.png">
-
     {{ font_load }}
     <link rel="stylesheet" href="https://unpkg.com/mdui@2.0.3/mdui.css">
     <script src="https://unpkg.com/mdui@2.0.3/mdui.global.js"></script>
@@ -13,7 +12,6 @@
 </head>
 <body>
 <div class="mdui-appbar mdui-shadow-0">
-
     <h1>ID卡编辑器</h1>
     <br>
     <hr>
@@ -32,14 +30,12 @@
     </label>
     <br>
 
-
     <script type="text/javascript" src="/static/js/canvas_edit.js"></script>
 
     <mdui-checkbox type="checkbox" id="avatar-round-input">头像是否圆角</mdui-checkbox>
     <mdui-text-field id='avatarCol' value='avatar' placeholder="avatar"
                      label="avatar mapping col name"></mdui-text-field>
     <br>
-    <!--    <mdui-slider></mdui-slider>-->
 
     <mdui-slider type="range" id="avatar-size-input" min="20" max="300" value="100">头像大小</mdui-slider>
     <br>
@@ -85,10 +81,8 @@
     <script type="text/javascript" src="/static/js/cookie.js"></script>
 
     <hr>
-    <br><br>
-    <!--    <mdui-button onclick="batchProcess()" id="batch_btn">开始批量处理</mdui-button>-->
-    <br>
-    <br></div>
+    <br><br><br><br>
+</div>
 <mdui-tooltip content="使用模版批量合成">
     <mdui-fab id="batch_btn" icon="batch_prediction" target="_blank" size="normal" extended class="flow-btn"
               onclick="batchProcess()">批量处理
