@@ -1,0 +1,83 @@
+:root,
+.mdui-theme-light {
+    color: #000;
+    background-color: #fff;
+}
+
+.mdui-theme-dark {
+    color: #fff;
+    background-color: #000;
+}
+
+#canvas {
+    border: 2px solid #000;
+    /*width: 500px; 宽改成自适应*/
+    width: 500px;
+    height: 500px;
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+#avatar-container {
+    position: absolute;
+    cursor: move;
+    transform-origin: top left;
+}
+
+#avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 0%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.text-container {
+    position: absolute;
+    top: 120px;
+    left: 100px;
+    cursor: move;
+    transform-origin: top left;
+}
+
+.text {
+    font-size: 20px;
+    font-family: Arial;
+}
+
+.bordered {
+    border: 1px solid black;
+}
+
+/* 可选：自定义分割线样式 */
+/*hr {*/
+/*    border: none;*/
+/*    border-top: 1px solid black;*/
+/*    margin: 20px 0;*/
+/*}*/
+
+/* 表格样式 */
+/*table {*/
+/*    border-collapse: collapse; !* 合并单元格边框 *!*/
+/*    width: 100%;*/
+/*}*/
+
+/*th, td {*/
+/*    border: 1px solid black; !* 单元格边框 *!*/
+/*    padding: 8px;*/
+/*    text-align: left;*/
+/*}*/
+
+/*th {*/
+/*    background-color: #f2f2f2; !* 表头背景色 *!*/
+/*}*/
+.flow-btn {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 9999;
+    /* 其他你需要的样式 */
+}
